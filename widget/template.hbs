@@ -1,0 +1,533 @@
+<!--
+© Teacuppity design, © Sonnelia code. All rights reserved.
+Do not redistribute or edit without obtaining explicit permission
+Last updated 06/04/2025
+-->
+{{#*inline "renderMessage"}}
+<div id="{{ id }}" class="message-container {{ role }}" ekg-removed="expired">
+  <div class="message-box {{#if emotesOnly}}emote-only{{/if}}">
+    <div class="user">
+      <div class="username">
+        {{ username }}
+        {{#if emotesOnly}}<span>sent a sticker.</span>{{/if}}
+      </div>
+      <div class="badge">
+        {{#repeat subTier}}
+        <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+          <path
+            d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+          />
+        </svg>
+        {{/repeat}}
+        {{#eq role "broadcaster"}}
+        <svg class="sparkle" width="20" height="20" viewBox="0 0 20 20">
+          <path
+            d="M0 10C9.18839 9.55273 9.55273 9.18839 10 0C10.4473 9.19135 10.8116 9.55273 20 10C10.8116 10.4473 10.4473 10.8116 10 20C9.55273 10.8086 9.18839 10.4473 0 10Z"
+          />
+        </svg>
+        {{/eq}}
+      </div>
+    </div>
+
+    <div class="message">
+      {{> renderChat message }}
+    </div>
+
+    <div class="message-decorations">
+      <svg class="arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+        <path
+          class="fill"
+          d="M23 11.5L23.0001 1H10.2466L2.00006 9C0.720977 10.2541 1.20868 11.5 3.00002 11.5H23Z"
+          fill="#2A324E"
+        />
+        <path
+          class="stroke"
+          d="M24 11.5H2.99998C1.21435 11.5 0.72225 10.2199 2 9L10.65 0.650146"
+          stroke="#839EC6"
+        />
+      </svg>
+      <div class="icon-wrap">
+        {{#eq role "broadcaster"}}
+        <div class="icon-bg"></div>
+        <div class="icon">
+          <img src={{../settings.broadcasterIcon}}>
+          <div class="filter"></div>
+        </div>
+        <svg class="border" width="33" height="27" viewBox="0 0 33 27" fill="none">
+          <path
+            d="M26.5001 8.60003V8.86036L26.7134 9.00965L31.9579 12.6808C32.5266 13.0789 32.5266 13.9211 31.9579 14.3192L26.7134 17.9903L26.5001 18.1396V18.4V21C26.5001 24.0376 24.0377 26.5 21.0001 26.5H6.00012C2.96255 26.5 0.500122 24.0376 0.500122 21V6C0.500122 2.96243 2.96255 0.5 6.00012 0.5H21.0001C24.0377 0.5 26.5001 2.96243 26.5001 6V8.60003Z"
+          />
+        </svg>
+        <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+          <path
+            d="M5.9993 0.000384703C4.59979 -0.025639 4 1.2773 4 1.2773C4 1.2773 3.40021 -0.025639 2.0007 0.000384703C0.676159 0.0253831 -0.0252945 1.05832 0.000697424 2.00026C0.100663 5.47503 4 6 4 6C4 6 7.89934 5.47503 7.9993 2.00026C8.02529 1.05832 7.32384 0.0253831 5.9993 0.000384703Z"
+          />
+        </svg>
+        {{/eq}}
+        {{#eq role "moderator"}}
+        <div class="icon-bg"></div>
+        <div class="icon">
+          <img src={{../settings.moderatorIcon}}>
+          <div class="filter"></div>
+        </div>
+        <svg class="border" width="33" height="27" viewBox="0 0 33 27" fill="none">
+          <path
+            d="M6.3844 8.60003V8.86036L6.17113 9.00965L0.926617 12.6808C0.357895 13.0789 0.357895 13.9211 0.926619 14.3192L6.17113 17.9903L6.3844 18.1396V18.4V21C6.3844 24.0376 8.84684 26.5 11.8844 26.5H26.8844C29.922 26.5 32.3844 24.0376 32.3844 21V6C32.3844 2.96243 29.922 0.5 26.8844 0.5H11.8844C8.84684 0.5 6.3844 2.96243 6.3844 6V8.60003Z"
+          />
+        </svg>
+        <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+          <path
+            d="M5.9993 0.000384703C4.59979 -0.025639 4 1.2773 4 1.2773C4 1.2773 3.40021 -0.025639 2.0007 0.000384703C0.676159 0.0253831 -0.0252945 1.05832 0.000697424 2.00026C0.100663 5.47503 4 6 4 6C4 6 7.89934 5.47503 7.9993 2.00026C8.02529 1.05832 7.32384 0.0253831 5.9993 0.000384703Z"
+          />
+        </svg>
+        {{/eq}}
+        {{#eq role "vip"}}
+        <div class="icon-bg"></div>
+        <div class="icon">
+          <img src={{../settings.vipIcon}}>
+          <div class="filter"></div>
+        </div>
+        <svg class="border" width="33" height="27" viewBox="0 0 33 27" fill="none">
+          <path
+            d="M6.3844 8.60003V8.86036L6.17113 9.00965L0.926617 12.6808C0.357895 13.0789 0.357895 13.9211 0.926619 14.3192L6.17113 17.9903L6.3844 18.1396V18.4V21C6.3844 24.0376 8.84684 26.5 11.8844 26.5H26.8844C29.922 26.5 32.3844 24.0376 32.3844 21V6C32.3844 2.96243 29.922 0.5 26.8844 0.5H11.8844C8.84684 0.5 6.3844 2.96243 6.3844 6V8.60003Z"
+          />
+        </svg>
+        <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+          <path
+            d="M5.9993 0.000384703C4.59979 -0.025639 4 1.2773 4 1.2773C4 1.2773 3.40021 -0.025639 2.0007 0.000384703C0.676159 0.0253831 -0.0252945 1.05832 0.000697424 2.00026C0.100663 5.47503 4 6 4 6C4 6 7.89934 5.47503 7.9993 2.00026C8.02529 1.05832 7.32384 0.0253831 5.9993 0.000384703Z"
+          />
+        </svg>
+        {{/eq}}
+      </div>
+    </div>
+  </div>
+</div>
+{{/inline}}
+{{#*inline "renderAlert"}}
+<div id="{{ id }}" class="message-container {{ type }}">
+  <div class="alert-box">
+    <div class="alert-title">
+      <div class="alert-user">
+        <svg class="sparkle" width="15" height="15" viewBox="0 0 15 15">
+          <path
+            d="M0 7.5C6.89129 7.16454 7.16454 6.89129 7.5 0C7.83546 6.89351 8.10871 7.16454 15 7.5C8.10871 7.83546 7.83546 8.10871 7.5 15C7.16454 8.10649 6.89129 7.83546 0 7.5Z"
+          />
+        </svg>
+        <div class="alert-username">
+          {{#eq type "cheer"}}
+          {{ amount }}
+          {{#eq amount 1}}
+          bit
+          {{else}}
+          bits
+          {{/eq}}
+          {{else eq type "tip"}}
+          {{#eq position "left"}}
+          <span>{{ symbol }}</span
+          >{{ amount }}
+          {{else}}
+          {{ amount }}<span>{{ symbol }}</span>
+          {{/eq}}
+          {{ else }}
+          {{ username }}
+          {{/eq}}
+        </div>
+      </div>
+      <div class="alert-contents">
+        {{#eq type "follower"}}
+        <span>has</span> followed
+        {{/eq}}
+        {{#eq type "subscriber"}}
+        {{#eq mode "new_sub"}}
+        <span>has</span> subscribed
+        {{/eq}}
+        {{#eq mode "resub"}}
+        <span>has</span> subscribed X{{ months }}
+        {{/eq}}
+        {{#eq mode "single_gift"}}
+        <span>has</span> gifted {{ recipient }}
+        {{/eq}}
+        {{#eq mode "bulk_gift"}}
+        <span>has</span> gifted X{{ amount }}
+        {{/eq}}
+        {{/eq}}
+        {{#eq type "cheer"}}
+        <span>from</span> {{ username }}
+        {{/eq}}
+        {{#eq type "tip"}}
+        <span>from</span> {{ username }}
+        {{/eq}}
+        {{#eq type "tip"}}
+        <span>has</span> raided X{{ amount }}
+        {{/eq}}
+      </div>
+    </div>
+
+    <div class="alert-decorations">
+      <svg class="hearts" width="5" height="23" viewBox="0 0 5 23">
+        <path
+          fill-rule="evenodd"
+          clip-rule="evenodd"
+          d="M1.25044 0.000256469C2.12513 -0.0170927 2.5 0.851537 2.5 0.851537C2.5 0.851537 2.87487 -0.0170927 3.74956 0.000256469C4.5774 0.016922 5.01581 0.70555 4.99956 1.3335C4.93709 3.65002 2.5 4 2.5 4C2.5 4 0.0629139 3.65002 0.000435701 1.3335C-0.0158092 0.70555 0.4226 0.016922 1.25044 0.000256469ZM1.25044 9.50026C2.12513 9.48291 2.5 10.3515 2.5 10.3515C2.5 10.3515 2.87487 9.48291 3.74956 9.50026C4.5774 9.51692 5.01581 10.2055 4.99956 10.8335C4.93709 13.15 2.5 13.5 2.5 13.5C2.5 13.5 0.0629139 13.15 0.000435701 10.8335C-0.0158092 10.2055 0.4226 9.51692 1.25044 9.50026ZM2.5 19.8515C2.5 19.8515 2.12513 18.9829 1.25044 19.0003C0.4226 19.0169 -0.0158092 19.7055 0.000435701 20.3335C0.0629139 22.65 2.5 23 2.5 23C2.5 23 4.93709 22.65 4.99956 20.3335C5.01581 19.7055 4.5774 19.0169 3.74956 19.0003C2.87487 18.9829 2.5 19.8515 2.5 19.8515Z"
+        />
+      </svg>
+      <svg class="sparkle" width="21" height="21" viewBox="0 0 21 21">
+        <path
+          d="M0 10.5C9.64781 10.0304 10.0304 9.64781 10.5 0C10.9696 9.65092 11.3522 10.0304 21 10.5C11.3522 10.9696 10.9696 11.3522 10.5 21C10.0304 11.3491 9.64781 10.9696 0 10.5Z"
+        />
+      </svg>
+      <div class="glow"></div>
+      <div class="bubble">
+        <p>notification</p>
+        <svg width="89" height="27" viewBox="0 0 89 27">
+          <path
+            d="M38.1217 21.6136L37.9834 21.5H37.8044H11C5.20101 21.5 0.5 16.799 0.5 11C0.5 5.20101 5.20101 0.5 11 0.5H78C83.799 0.5 88.5 5.20101 88.5 11C88.5 16.799 83.799 21.5 78 21.5H51.1957H51.0166L50.8783 21.6136L45.4521 26.0708C44.8988 26.5254 44.1013 26.5254 43.5479 26.0709L38.1217 21.6136Z"
+          />
+        </svg>
+      </div>
+      <div class="status {{ status }}">
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{{/inline}}
+
+<div class="main-container">
+<h1 style="color: red; font-size: 5em">aaaaa</h1>
+  {{#each messages}}
+  {{#eq render "message"}}
+  {{> renderMessage this}}
+  {{/eq}}
+  {{#eq render "alert"}}
+  {{> renderAlert this}}
+  {{/eq}}
+  {{/each}}
+
+  {{#if settings.chatPreview}}
+  <div class="preview">
+    <!-- STANDARD -->
+    <div class="message-container">
+      <div class="message-box">
+        <div class="user">
+          <div class="username">Regularviewer</div>
+          <div class="badge"></div>
+        </div>
+
+        <div class="message">
+          Thank you for purchasing this widget!
+          <img
+            src="https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_643139144d9942eaa0a246c42a54ed12/default/dark/4.0"
+          />
+          <img
+            src="https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_fbf563cb4fdb40b9871146d00cbc1f60/default/dark/4.0"
+          />
+        </div>
+
+        <div class="message-decorations">
+          <svg class="arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <path
+              class="fill"
+              d="M23 11.5L23.0001 1H10.2466L2.00006 9C0.720977 10.2541 1.20868 11.5 3.00002 11.5H23Z"
+              fill="#2A324E"
+            />
+            <path
+              class="stroke"
+              d="M24 11.5H2.99998C1.21435 11.5 0.72225 10.2199 2 9L10.65 0.650146"
+              stroke="#839EC6"
+            />
+          </svg>
+          <div class="icon-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMOTE ONLY -->
+    <div class="message-container">
+      <div class="message-box emote-only">
+        <div class="user">
+          <div class="username">Regularviewer<span> sent a sticker.</span></div>
+          <div class="badge">
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div class="message">
+          <img
+            src="https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_0a2e94e7c7674e40bc952e0ca6d557ca/default/dark/4.0"
+          />
+          <img
+            src="https://static-cdn.jtvnw.net/emoticons/v2/emotesv2_f2932795c700420481f53fe677a149b4/default/dark/4.0"
+          />
+        </div>
+
+        <div class="message-decorations">
+          <svg class="arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <path
+              class="fill"
+              d="M23 11.5L23.0001 1H10.2466L2.00006 9C0.720977 10.2541 1.20868 11.5 3.00002 11.5H23Z"
+              fill="#2A324E"
+            />
+            <path
+              class="stroke"
+              d="M24 11.5H2.99998C1.21435 11.5 0.72225 10.2199 2 9L10.65 0.650146"
+              stroke="#839EC6"
+            />
+          </svg>
+          <div class="icon-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERT SUB -->
+    <div class="message-container subscriber">
+      <div class="alert-box">
+        <div class="alert-title">
+          <div class="alert-user">
+            <svg class="sparkle" width="15" height="15" viewBox="0 0 15 15">
+              <path
+                d="M0 7.5C6.89129 7.16454 7.16454 6.89129 7.5 0C7.83546 6.89351 8.10871 7.16454 15 7.5C8.10871 7.83546 7.83546 8.10871 7.5 15C7.16454 8.10649 6.89129 7.83546 0 7.5Z"
+              />
+            </svg>
+            <div class="alert-username">VeryImportantPerson</div>
+          </div>
+          <div class="alert-contents"><span>has</span> subscribed</div>
+        </div>
+
+        <div class="alert-decorations">
+          <svg class="hearts" width="5" height="23" viewBox="0 0 5 23">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M1.25044 0.000256469C2.12513 -0.0170927 2.5 0.851537 2.5 0.851537C2.5 0.851537 2.87487 -0.0170927 3.74956 0.000256469C4.5774 0.016922 5.01581 0.70555 4.99956 1.3335C4.93709 3.65002 2.5 4 2.5 4C2.5 4 0.0629139 3.65002 0.000435701 1.3335C-0.0158092 0.70555 0.4226 0.016922 1.25044 0.000256469ZM1.25044 9.50026C2.12513 9.48291 2.5 10.3515 2.5 10.3515C2.5 10.3515 2.87487 9.48291 3.74956 9.50026C4.5774 9.51692 5.01581 10.2055 4.99956 10.8335C4.93709 13.15 2.5 13.5 2.5 13.5C2.5 13.5 0.0629139 13.15 0.000435701 10.8335C-0.0158092 10.2055 0.4226 9.51692 1.25044 9.50026ZM2.5 19.8515C2.5 19.8515 2.12513 18.9829 1.25044 19.0003C0.4226 19.0169 -0.0158092 19.7055 0.000435701 20.3335C0.0629139 22.65 2.5 23 2.5 23C2.5 23 4.93709 22.65 4.99956 20.3335C5.01581 19.7055 4.5774 19.0169 3.74956 19.0003C2.87487 18.9829 2.5 19.8515 2.5 19.8515Z"
+              fill="#E4F2FF"
+            />
+          </svg>
+          <svg class="sparkle" width="21" height="21" viewBox="0 0 21 21">
+            <path
+              d="M0 10.5C9.64781 10.0304 10.0304 9.64781 10.5 0C10.9696 9.65092 11.3522 10.0304 21 10.5C11.3522 10.9696 10.9696 11.3522 10.5 21C10.0304 11.3491 9.64781 10.9696 0 10.5Z"
+            />
+          </svg>
+          <div class="glow"></div>
+          <div class="bubble">
+            <p>notification</p>
+            <svg width="89" height="27" viewBox="0 0 89 27">
+              <path
+                d="M38.1217 21.6136L37.9834 21.5H37.8044H11C5.20101 21.5 0.5 16.799 0.5 11C0.5 5.20101 5.20101 0.5 11 0.5H78C83.799 0.5 88.5 5.20101 88.5 11C88.5 16.799 83.799 21.5 78 21.5H51.1957H51.0166L50.8783 21.6136L45.4521 26.0708C44.8988 26.5254 44.1013 26.5254 43.5479 26.0709L38.1217 21.6136Z"
+              />
+            </svg>
+          </div>
+          <div class="status online">
+            <div class="dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERT DONO -->
+    <div class="message-container tip">
+      <div class="alert-box">
+        <div class="alert-title">
+          <div class="alert-user">
+            <svg class="sparkle" width="15" height="15" viewBox="0 0 15 15">
+              <path
+                d="M0 7.5C6.89129 7.16454 7.16454 6.89129 7.5 0C7.83546 6.89351 8.10871 7.16454 15 7.5C8.10871 7.83546 7.83546 8.10871 7.5 15C7.16454 8.10649 6.89129 7.83546 0 7.5Z"
+              />
+            </svg>
+            <div class="alert-username"><span>$</span>100.00</div>
+          </div>
+          <div class="alert-contents"><span>from</span> regularviewer</div>
+        </div>
+
+        <div class="alert-decorations">
+          <svg class="hearts" width="5" height="23" viewBox="0 0 5 23">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M1.25044 0.000256469C2.12513 -0.0170927 2.5 0.851537 2.5 0.851537C2.5 0.851537 2.87487 -0.0170927 3.74956 0.000256469C4.5774 0.016922 5.01581 0.70555 4.99956 1.3335C4.93709 3.65002 2.5 4 2.5 4C2.5 4 0.0629139 3.65002 0.000435701 1.3335C-0.0158092 0.70555 0.4226 0.016922 1.25044 0.000256469ZM1.25044 9.50026C2.12513 9.48291 2.5 10.3515 2.5 10.3515C2.5 10.3515 2.87487 9.48291 3.74956 9.50026C4.5774 9.51692 5.01581 10.2055 4.99956 10.8335C4.93709 13.15 2.5 13.5 2.5 13.5C2.5 13.5 0.0629139 13.15 0.000435701 10.8335C-0.0158092 10.2055 0.4226 9.51692 1.25044 9.50026ZM2.5 19.8515C2.5 19.8515 2.12513 18.9829 1.25044 19.0003C0.4226 19.0169 -0.0158092 19.7055 0.000435701 20.3335C0.0629139 22.65 2.5 23 2.5 23C2.5 23 4.93709 22.65 4.99956 20.3335C5.01581 19.7055 4.5774 19.0169 3.74956 19.0003C2.87487 18.9829 2.5 19.8515 2.5 19.8515Z"
+            />
+          </svg>
+          <svg class="sparkle" width="21" height="21" viewBox="0 0 21 21">
+            <path
+              d="M0 10.5C9.64781 10.0304 10.0304 9.64781 10.5 0C10.9696 9.65092 11.3522 10.0304 21 10.5C11.3522 10.9696 10.9696 11.3522 10.5 21C10.0304 11.3491 9.64781 10.9696 0 10.5Z"
+            />
+          </svg>
+          <div class="glow"></div>
+          <div class="bubble">
+            <p>notification</p>
+            <svg width="89" height="27" viewBox="0 0 89 27">
+              <path
+                d="M38.1217 21.6136L37.9834 21.5H37.8044H11C5.20101 21.5 0.5 16.799 0.5 11C0.5 5.20101 5.20101 0.5 11 0.5H78C83.799 0.5 88.5 5.20101 88.5 11C88.5 16.799 83.799 21.5 78 21.5H51.1957H51.0166L50.8783 21.6136L45.4521 26.0708C44.8988 26.5254 44.1013 26.5254 43.5479 26.0709L38.1217 21.6136Z"
+              />
+            </svg>
+          </div>
+          <div class="status busy">
+            <div class="dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIBER -->
+    <div class="message-container subscriber">
+      <div class="message-box">
+        <div class="user">
+          <div class="username">Subscriber</div>
+          <div class="badge">
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div class="message">
+          I am a subscriber and the number of hearts next to my username corresponds to my sub tier,
+          neat!
+        </div>
+
+        <div class="message-decorations">
+          <svg class="arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <path
+              class="fill"
+              d="M23 11.5L23.0001 1H10.2466L2.00006 9C0.720977 10.2541 1.20868 11.5 3.00002 11.5H23Z"
+              fill="#2A324E"
+            />
+            <path
+              class="stroke"
+              d="M24 11.5H2.99998C1.21435 11.5 0.72225 10.2199 2 9L10.65 0.650146"
+              stroke="#839EC6"
+            />
+          </svg>
+          <div class="icon-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIP/MODERATOR -->
+    <div class="message-container moderator">
+      <div class="message-box">
+        <div class="user">
+          <div class="username">VeryImportantPerson</div>
+          <div class="badge">
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M2.0007 0.000384703C3.40021 -0.025639 4 1.2773 4 1.2773C4 1.2773 4.59979 -0.025639 5.9993 0.000384703C7.32384 0.0253831 8.02529 1.05832 7.9993 2.00026C7.89934 5.47503 4 6 4 6C4 6 0.100662 5.47503 0.000697121 2.00026C-0.0252948 1.05832 0.67616 0.0253831 2.0007 0.000384703Z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div class="message">I'm a Very Important Person!</div>
+
+        <div class="message-decorations">
+          <svg class="arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <path
+              class="fill"
+              d="M23 11.5L23.0001 1H10.2466L2.00006 9C0.720977 10.2541 1.20868 11.5 3.00002 11.5H23Z"
+              fill="#2A324E"
+            />
+            <path
+              class="stroke"
+              d="M24 11.5H2.99998C1.21435 11.5 0.72225 10.2199 2 9L10.65 0.650146"
+              stroke="#839EC6"
+            />
+          </svg>
+          <div class="icon-wrap">
+            <div class="icon-bg"></div>
+            <div class="icon">
+              <img src="https://cdn.streamelements.com/uploads/01jr03b6a3frpxad2vej4fw8v8.jpg" />
+              <div class="filter"></div>
+            </div>
+            <svg class="border" width="33" height="27" viewBox="0 0 33 27" fill="none">
+              <path
+                d="M6.3844 8.60003V8.86036L6.17113 9.00965L0.926617 12.6808C0.357895 13.0789 0.357895 13.9211 0.926619 14.3192L6.17113 17.9903L6.3844 18.1396V18.4V21C6.3844 24.0376 8.84684 26.5 11.8844 26.5H26.8844C29.922 26.5 32.3844 24.0376 32.3844 21V6C32.3844 2.96243 29.922 0.5 26.8844 0.5H11.8844C8.84684 0.5 6.3844 2.96243 6.3844 6V8.60003Z"
+              />
+            </svg>
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M5.9993 0.000384703C4.59979 -0.025639 4 1.2773 4 1.2773C4 1.2773 3.40021 -0.025639 2.0007 0.000384703C0.676159 0.0253831 -0.0252945 1.05832 0.000697424 2.00026C0.100663 5.47503 4 6 4 6C4 6 7.89934 5.47503 7.9993 2.00026C8.02529 1.05832 7.32384 0.0253831 5.9993 0.000384703Z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROADCASTER -->
+    <div class="message-container broadcaster">
+      <div class="message-box">
+        <div class="user">
+          <div class="username">Streamer</div>
+          <div class="badge">
+            <svg class="sparkle" width="21" height="21" viewBox="0 0 21 21">
+              <path
+                d="M0 10.5C9.64781 10.0304 10.0304 9.64781 10.5 0C10.9696 9.65092 11.3522 10.0304 21 10.5C11.3522 10.9696 10.9696 11.3522 10.5 21C10.0304 11.3491 9.64781 10.9696 0 10.5Z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div class="message">Broadcaster message ⋆ ｡˚</div>
+
+        <div class="message-decorations">
+          <svg class="arrow" width="24" height="12" viewBox="0 0 24 12" fill="none">
+            <path
+              class="fill"
+              d="M23 11.5L23.0001 1H10.2466L2.00006 9C0.720977 10.2541 1.20868 11.5 3.00002 11.5H23Z"
+              fill="#2A324E"
+            />
+            <path
+              class="stroke"
+              d="M24 11.5H2.99998C1.21435 11.5 0.72225 10.2199 2 9L10.65 0.650146"
+              stroke="#839EC6"
+            />
+          </svg>
+          <div class="icon-wrap">
+            <div class="icon-bg"></div>
+            <div class="icon">
+              <img src="https://cdn.streamelements.com/uploads/01jr03b6a3frpxad2vej4fw8v8.jpg" />
+              <div class="filter"></div>
+            </div>
+            <svg class="border" width="33" height="27" viewBox="0 0 33 27" fill="none">
+              <path
+                d="M26.5001 8.60003V8.86036L26.7134 9.00965L31.9579 12.6808C32.5266 13.0789 32.5266 13.9211 31.9579 14.3192L26.7134 17.9903L26.5001 18.1396V18.4V21C26.5001 24.0376 24.0377 26.5 21.0001 26.5H6.00012C2.96255 26.5 0.500122 24.0376 0.500122 21V6C0.500122 2.96243 2.96255 0.5 6.00012 0.5H21.0001C24.0377 0.5 26.5001 2.96243 26.5001 6V8.60003Z"
+              />
+            </svg>
+            <svg class="heart" width="8" height="6" viewBox="0 0 8 6">
+              <path
+                d="M5.9993 0.000384703C4.59979 -0.025639 4 1.2773 4 1.2773C4 1.2773 3.40021 -0.025639 2.0007 0.000384703C0.676159 0.0253831 -0.0252945 1.05832 0.000697424 2.00026C0.100663 5.47503 4 6 4 6C4 6 7.89934 5.47503 7.9993 2.00026C8.02529 1.05832 7.32384 0.0253831 5.9993 0.000384703Z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+</div>

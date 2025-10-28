@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@layer base {
+  * {
+    /*
+      Flex/Grid elements have min-width/min-height set to "auto" by default
+      This makes them unwilling to shrink below the max size of their content
+      without additional configuration on each element.
+
+      This is an extremely annoying gotcha that has cost me hours of my life,
+      so I just reset all elements min-width by default now and manually specify
+      min-size when needed.
+
+      Even the creator of tailwind has considered making this the default.
+      https://x.com/adamwathan/status/1734696245015494711
+    */
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
+@theme {
+  --font-sans: "Inter Variable", sans-serif;
+  --font-sans--font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  --anchor-gap: 0.5em;
+}

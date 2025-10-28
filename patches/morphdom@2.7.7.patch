@@ -1,0 +1,60 @@
+diff --git a/dist/morphdom-esm.js b/dist/morphdom-esm.js
+index 10a96056523f288ec21deba73ff1df81c26925d1..191dcc4554bd9f62f2936b07e9558ee8d4f37d3d 100644
+--- a/dist/morphdom-esm.js
++++ b/dist/morphdom-esm.js
+@@ -338,6 +338,7 @@ function morphdomFactory(morphAttrs) {
+ 
+     // This object is used as a lookup to quickly find all keyed elements in the original DOM tree.
+     var fromNodesLookup = Object.create(null);
++    var toNodesLookup = Object.create(null);
+     var keyedRemovalList = [];
+ 
+     function addKeyedRemoval(key) {
+@@ -419,24 +420,28 @@ function morphdomFactory(morphAttrs) {
+     //     }
+     // }
+ 
+-    function indexTree(node) {
+-      if (node.nodeType === ELEMENT_NODE || node.nodeType === DOCUMENT_FRAGMENT_NODE$1) {
++    function indexTree(node, lookup) {
++      if (
++        node.nodeType === ELEMENT_NODE ||
++        node.nodeType === DOCUMENT_FRAGMENT_NODE
++      ) {
+         var curChild = node.firstChild;
+         while (curChild) {
+           var key = getNodeKey(curChild);
+           if (key) {
+-            fromNodesLookup[key] = curChild;
++            lookup[key] = curChild;
+           }
+ 
+           // Walk recursively
+-          indexTree(curChild);
++          indexTree(curChild, lookup);
+ 
+           curChild = curChild.nextSibling;
+         }
+       }
+     }
+ 
+-    indexTree(fromNode);
++    indexTree(fromNode, fromNodesLookup);
++    indexTree(toNode, toNodesLookup);
+ 
+     function handleNodeAdded(el) {
+       onNodeAdded(el);
+@@ -570,7 +575,12 @@ function morphdomFactory(morphAttrs) {
+                   // let's check our lookup to see if there is a matching element in the original
+                   // DOM tree
+                   if ((matchingFromEl = fromNodesLookup[curToNodeKey])) {
+-                    if (fromNextSibling === matchingFromEl) {
++                    if (
++                      // Skip this element and delete it if the next element is what we are looking for
++                      fromNextSibling === matchingFromEl ||
++                      // Also skip if this element is keyed and we know the key is being deleted
++                      (curFromNodeKey && !toNodesLookup[curFromNodeKey])
++                    ) {
+                       // Special case for single element removals. To avoid removing the original
+                       // DOM node out of the tree (since that can break CSS transitions, etc.),
+                       // we will instead discard the current node and wait until the next

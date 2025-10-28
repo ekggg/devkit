@@ -1,0 +1,331 @@
+{
+  "$schema": "https://ekg.gg/schemas/manifest.json",
+  "name": "Nightglow",
+  "version": "2.0.0",
+  "description": "",
+  "template": "template.hbs",
+  "css": "styles.css",
+  "js": "script.ts",
+  "assets": {
+    "gigi": {
+      "type": "image",
+      "file": "images/gigi.jpg"
+    }
+  },
+  "settings": {
+    "chatPreview": {
+      "type": "boolean",
+      "name": "Chat preview",
+      "default": false
+    },
+    "vipIcon": {
+      "type": "image",
+      "name": "Vip icon:",
+      "default": "images/gigi.jpg"
+    },
+    "moderatorIcon": {
+      "type": "image",
+      "name": "Moderator icon:"
+    },
+    "broadcasterIcon": {
+      "type": "image",
+      "name": "Broadcaster icon:"
+    },
+    "alignment": {
+      "type": "string",
+      "name": "Align Messages:",
+      "default": "column",
+      "choices": {
+        "column-reverse": "Top",
+        "column": "Bottom"
+      }
+    },
+    "hideAfter": {
+      "type": "boolean",
+      "name": "Hide messages after time",
+      "default": false
+    },
+    "hideAfterAmount": {
+      "type": "integer",
+      "name": "Hide messages after x seconds:",
+      "default": 30,
+      "min": 0
+    },
+    "messageLimit": {
+      "type": "boolean",
+      "name": "Limit message amount",
+      "default": false
+    },
+    "messageLimitAmount": {
+      "type": "integer",
+      "name": "Max message amount:",
+      "default": 10,
+      "min": 0
+    },
+    "emotesize": {
+      "type": "decimal",
+      "name": "Emote size:",
+      "default": 2,
+      "min": 0,
+      "step": 0.1
+    },
+    "bigemotesize": {
+      "type": "decimal",
+      "name": "Big emote size:",
+      "default": 6,
+      "min": 0,
+      "step": 0.1
+    },
+    "bigEmoteAmount": {
+      "type": "integer",
+      "name": "Max amount of big emotes in one msg:",
+      "default": 1,
+      "min": 0
+    },
+    "scale": {
+      "type": "decimal",
+      "name": "Change scale:",
+      "default": 1,
+      "min": 1,
+      "max": 2,
+      "step": 0.1
+    },
+    "hue": {
+      "type": "decimal",
+      "name": "Change overall hue:",
+      "default": 0,
+      "min": 0,
+      "max": 36
+    },
+    "donohue": {
+      "type": "decimal",
+      "name": "Change tip/cheer hue (default 1)",
+      "default": 1,
+      "min": 0,
+      "max": 36
+    },
+    "color": {
+      "type": "color",
+      "name": "#D6DDE9 - text color",
+      "default": "#D6DDE9"
+    },
+    "normalbg": {
+      "type": "color",
+      "name": "#151B23 - normal background",
+      "default": "#151B23"
+    },
+    "normalborder": {
+      "type": "color",
+      "name": "#839EC6 - normal border",
+      "default": "#839EC6"
+    },
+    "normalname": {
+      "type": "color",
+      "name": "#BBCAE3 - normal username",
+      "default": "#BBCAE3"
+    },
+    "subscriberbg": {
+      "type": "color",
+      "name": "#222C3A - subscriber background",
+      "default": "#222C3A"
+    },
+    "subscriberborder": {
+      "type": "color",
+      "name": "#7790B5 - subscriber border",
+      "default": "#7790B5"
+    },
+    "subscribername": {
+      "type": "color",
+      "name": "#C9DBF9 - subscriber username",
+      "default": "#C9DBF9"
+    },
+    "vipmodbg": {
+      "type": "color",
+      "name": "#2A324E - vip/mod background",
+      "default": "#2A324E"
+    },
+    "vipmodborder": {
+      "type": "color",
+      "name": "#839EC6 - vip/mod border",
+      "default": "#839EC6"
+    },
+    "vipmodname": {
+      "type": "color",
+      "name": "#BEC8F0 - vip/mod username",
+      "default": "#BEC8F0"
+    },
+    "vipmodglow": {
+      "type": "color",
+      "name": "#2e67c254 - vip/mod glow",
+      "default": "#2e67c254"
+    },
+    "broadcasterbg": {
+      "type": "color",
+      "name": "#3B4F6A - broadcaster background",
+      "default": "#3B4F6A"
+    },
+    "broadcasterborder": {
+      "type": "color",
+      "name": "#C2D5F5 - broadcaster border",
+      "default": "#C2D5F5"
+    },
+    "broadcastername": {
+      "type": "color",
+      "name": "#EEFAFB - broadcaster username",
+      "default": "#EEFAFB"
+    },
+    "broadcasterglow": {
+      "type": "color",
+      "name": "#2e79c354 - broadcaster glow",
+      "default": "#2e79c354"
+    },
+    "iconfilter": {
+      "type": "color",
+      "name": "#484C58 - icon filter color",
+      "default": "#484C58"
+    },
+    "iconsaturation": {
+      "type": "decimal",
+      "name": "Icon saturation slider (default 0.9)",
+      "default": 0.9,
+      "min": 0,
+      "max": 1,
+      "step": 0.1
+    },
+    "alertcolor": {
+      "type": "color",
+      "name": "#E3EDFF - alert text color",
+      "default": "#E3EDFF"
+    },
+    "alerttextglow": {
+      "type": "color",
+      "name": "#4283FFA6 - alert text glow",
+      "default": "#4283FFA6"
+    },
+    "alerttext": {
+      "type": "color",
+      "name": "#AFC8FF - alert subtext color",
+      "default": "#AFC8FF"
+    },
+    "alertbg": {
+      "type": "color",
+      "name": "#18213A - alert background",
+      "default": "#18213A"
+    },
+    "alertborder": {
+      "type": "color",
+      "name": "#A2BEE8 - alert border",
+      "default": "#A2BEE8"
+    },
+    "alertglow": {
+      "type": "color",
+      "name": "#527affbf - alert glow",
+      "default": "#527affbf"
+    },
+    "notifbg": {
+      "type": "color",
+      "name": "#3E5E88 - alert notification",
+      "default": "#3E5E88"
+    },
+    "statusonline": {
+      "type": "color",
+      "name": "#9EFFE9 - alert online status color",
+      "default": "#9EFFE9"
+    },
+    "statusbusy": {
+      "type": "color",
+      "name": "#FF9DAF - alert busy status color",
+      "default": "#FF9DAF"
+    },
+    "heartfill": {
+      "type": "color",
+      "name": "#E4F2FF - heart color",
+      "default": "#E4F2FF"
+    },
+    "heartglow": {
+      "type": "color",
+      "name": "#528EFF80 - heart glow",
+      "default": "#528EFF80"
+    },
+    "sparklefill": {
+      "type": "color",
+      "name": "#E2EDFE - sparkle color",
+      "default": "#E2EDFE"
+    },
+    "sparkleglow": {
+      "type": "color",
+      "name": "#6388FF - sparkle glow",
+      "default": "#6388FF"
+    },
+    "ignoredUsers": {
+      "type": "string_array",
+      "name": "Ignored users:",
+      "default": [
+        "StreamElements",
+        "Nightbot"
+      ]
+    },
+    "hideCommands": {
+      "type": "boolean",
+      "name": "Hide messages starting with \"!\"",
+      "default": true
+    },
+    "followerShow": {
+      "type": "boolean",
+      "name": "Show follows",
+      "default": true
+    },
+    "subscriberShow": {
+      "type": "boolean",
+      "name": "Show subscriptions",
+      "default": true
+    },
+    "cheerShow": {
+      "type": "boolean",
+      "name": "Show cheers (bits)",
+      "default": true
+    },
+    "cheerMinAmount": {
+      "type": "integer",
+      "name": "Minimum cheer amount to display",
+      "default": 0,
+      "min": 0
+    },
+    "tipShow": {
+      "type": "boolean",
+      "name": "Show tips (donations)",
+      "default": true
+    },
+    "tipMinAmount": {
+      "type": "integer",
+      "name": "Minimum tip amount to display (in cents)",
+      "default": 0,
+      "min": 0
+    },
+    "currency": {
+      "type": "string",
+      "name": "Tip currency:",
+      "default": "$"
+    },
+    "currencyPosition": {
+      "type": "string",
+      "name": "Currency position",
+      "default": "left",
+      "choices": {
+        "left": "Left",
+        "right": "Right"
+      }
+    },
+    "raidShow": {
+      "type": "boolean",
+      "name": "Show raids",
+      "default": true
+    },
+    "raidMinAmount": {
+      "type": "integer",
+      "name": "Minimum raid amount to display",
+      "default": 0,
+      "min": 0
+    }
+  }
+}
