@@ -1,6 +1,6 @@
-import type { EKGPublicSDK } from '../vendor/types'
+import type { PublicSDK } from '../vendor/types'
 
-export const EKG: EKGPublicSDK = {
+export const EKG: PublicSDK = {
   registerWidget(_widget) {
     return null
   },
