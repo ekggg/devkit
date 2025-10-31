@@ -1,12 +1,12 @@
+import { loadWidget } from 'ekg:devkit'
 import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react'
-import { loadWidget } from '../vendor/ekg-widget'
 import { Input as UiInput } from './ui/input'
 import { Label } from './ui/label'
 import { manifestSchema, stateSchema, type Manifest, type State } from './zod'
 
-export function App({ widget }: { widget: Record<string, string> }) {
-  const state = stateSchema.parse(JSON.parse(widget['./.state.json']!))
-  const manifest = manifestSchema.parse(JSON.parse(widget['./manifest.json']!))
+export function App(props: { widget: Record<string, string>; state: string }) {
+  const state = stateSchema.parse(JSON.parse(props.state))
+  const manifest = manifestSchema.parse(JSON.parse(props.widget['manifest.json']!))
 
   const updateStateStore = (v: Partial<State>) => import.meta.hot?.send('ekg:state', { ...state, ...v })
   const updateManifestStore = (v: Partial<Manifest>) => import.meta.hot?.send('ekg:manifest', { ...manifest, ...v })
@@ -18,15 +18,15 @@ export function App({ widget }: { widget: Record<string, string> }) {
   const setVersion = (version: string) => updateManifestStore({ version })
   const setDescription = (description: string) => updateManifestStore({ description })
 
-  const [scale, setScale] = useState(1)
   const sceneRef = useRef(null)
+  const [sceneSize, setSceneSize] = useState({ width: 1, height: 1 })
   useEffect(() => {
     const el = sceneRef.current as HTMLDivElement | null
     if (!el) return
 
     const update = () => {
-      const rect = el.getBoundingClientRect()
-      setScale(Math.min(rect.width / state.width, rect.height / state.height))
+      const { width, height } = el.getBoundingClientRect()
+      setSceneSize({ width, height })
     }
 
     const sizeObserver = new ResizeObserver(update)
@@ -34,6 +34,7 @@ export function App({ widget }: { widget: Record<string, string> }) {
     update()
     return () => sizeObserver.disconnect()
   }, [sceneRef.current])
+  const scale = Math.min(sceneSize.width / state.width, sceneSize.height / state.height)
 
   return (
     <div className="flex h-screen dark:text-slate-100 dark:bg-slate-900">
@@ -65,7 +66,7 @@ export function App({ widget }: { widget: Record<string, string> }) {
                 transform: `scale(${scale})`,
               }}
             >
-              <Widget state={state} manifest={manifest} widget={widget} />
+              <Widget state={state} manifest={manifest} widget={props.widget} />
             </div>
           </div>
         </div>
@@ -76,14 +77,10 @@ export function App({ widget }: { widget: Record<string, string> }) {
 }
 
 function Widget({ state, manifest, widget }: { state: State; manifest: Manifest; widget: Record<string, string> }) {
-  const template = widget[`./${manifest.template}`]
-  const css = widget[`./${manifest.css}`]
-  const js = widget[`./${manifest.js}`]
-  const assets = Object.fromEntries(
-    Object.entries(manifest.assets ?? {}).map(([key, { file }]) => {
-      return [key, 'data:,' + widget[`./${file}`]]
-    }),
-  )
+  const template = widget[manifest.template]
+  const css = widget[manifest.css]
+  const js = widget[manifest.js]
+  const assets = Object.fromEntries(Object.entries(manifest.assets ?? {}).map(([key, { file }]) => [key, widget[file]]))
   const settings = Object.fromEntries(
     Object.entries(manifest.settings ?? {}).map(([key, { default: d }]) => {
       return [key, state.settings[key] ?? d]
@@ -96,7 +93,7 @@ function Widget({ state, manifest, widget }: { state: State; manifest: Manifest;
     if (!el || !template || !css || !js) return
 
     console.log('reloading widget')
-    const p = loadWidget(el, { template, js, css, assets: {}, settings })
+    const p = loadWidget(el, { template, js, css, assets, settings })
 
     return () => {
       p.then(([_worker, cleanup]) => cleanup())

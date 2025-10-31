@@ -20,7 +20,7 @@ const ControlledInput: React.FC<InputProps> = (props) => {
   return <input ref={ref} value={value} onChange={handleChange} {...rest} />
 }
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+function Input({ className, type, ...props }: InputProps) {
   return (
     <ControlledInput
       type={type}
