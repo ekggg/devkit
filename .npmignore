@@ -3,4 +3,4 @@ cli/
 client/
 widget/
 *config.*
-types.d.ts
+ekg.d.ts

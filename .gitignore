@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 .runtime
-types.d.ts
+ekg.d.ts
