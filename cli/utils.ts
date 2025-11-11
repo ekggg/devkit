@@ -72,21 +72,18 @@ async function download(dir: string, file: string) {
 
 export async function regenerateTypes(dir: string, file: string) {
   const types = (assets: string, settings: string) =>
-    `/// <reference path="./devkit.d.ts" />
+    `/// <reference types="@ekg_gg/devkit" />
 
-namespace EKG {
-  ${assets === 'any' ? '// Run `ekg dev` for proper types' : ''}
+declare namespace EKG {
   interface WidgetAssets ${assets}
-
-  ${settings === 'any' ? '// Run `ekg dev` for proper types' : ''}
   interface WidgetSettings ${settings}
 }
 `
   const objType = <T>(o: Record<string, T>, process: (v: T) => string) => {
     const lines = Object.entries(o)
-      .map(([key, value]) => `    ${key}: ${process(value)}`)
-      .join('\n')
-    return `{\n${lines}\n  }`
+      .map(([key, value]) => `    ${key}: ${process(value)}\n`)
+      .join('')
+    return lines ? `{\n${lines}  }` : '{}'
   }
   const settingType = (v: { type: string; choices?: Record<string | number, unknown> }) => {
     if (v.choices) {
@@ -126,10 +123,10 @@ namespace EKG {
     const data = manifestSchema.parse(JSON.parse(buf.toString('utf8')))
     const assets = objType(data.assets ?? {}, () => 'string')
     const settings = objType(data.settings ?? {}, settingType)
-    await fs.writeFile(`${dir}/types.d.ts`, types(assets, settings))
+    await fs.writeFile(`${dir}/ekg.d.ts`, types(assets, settings))
   } catch (_) {
     try {
-      await fs.writeFile(`${dir}/types.d.ts`, types('any', 'any'), { flag: 'wx' })
+      await fs.writeFile(`${dir}/ekg.d.ts`, types('{}', '{}'), { flag: 'wx' })
     } catch (_) {
       // Ignore failures, the types file probably already exists
     }

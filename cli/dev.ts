@@ -61,8 +61,8 @@ export async function dev(dir: string, dev: boolean) {
   })
 
   server.watcher.add(paths.manifest)
-  server.watcher.on('change', (path) => path === paths.manifest && regenerateTypes(paths.ekg, paths.manifest))
-  await regenerateTypes(paths.ekg, paths.manifest)
+  server.watcher.on('change', (path) => path === paths.manifest && regenerateTypes(paths.root, paths.manifest))
+  await regenerateTypes(paths.root, paths.manifest)
 
   await server.listen()
 
