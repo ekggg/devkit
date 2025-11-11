@@ -1,21 +1,17 @@
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createServer } from 'vite'
 import { downloadDevkit, getPaths, regenerateTypes } from './utils'
 
-export async function dev(dir: string) {
-  const paths = await getPaths(dir)
+export async function dev(dir: string, dev: boolean) {
+  const paths = await getPaths(dir, dev)
   await downloadDevkit(paths.ekg)
 
   const server = await createServer({
-    configFile: false,
+    configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
-    server: { fs: { allow: [paths.devkit, paths.ekg, paths.widget] } },
+    server: { fs: { allow: [paths.node_modules, paths.ekg, paths.widget] } },
     plugins: [
-      tailwindcss(),
-      react(),
       {
         name: 'EKG Dev Kit',
         configureServer(server) {
@@ -57,7 +53,6 @@ export async function dev(dir: string) {
               case '.js':
               case '.ts':
                 return { code: `export default ${JSON.stringify(src)}` }
-              // return { code: `export default ${src}` }
             }
           }
         },

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://ekg.gg/schemas/manifest.json",
+  "name": "Test Widget",
+  "version": "1.0.0",
+  "description": "",
+  "template": "template.hbs",
+  "css": "styles.css",
+  "js": "script.ts",
+  "settings": {
+    "boolean": {
+      "type": "boolean",
+      "name": "Boolean",
+      "default": false
+    },
+    "color": {
+      "type": "color",
+      "name": "Color",
+      "default": "#FF00FF"
+    },
+    "color_array": {
+      "type": "color_array",
+      "name": "ColorArray",
+      "default": []
+    },
+    "color_choices": {
+      "type": "color",
+      "name": "ColorChoices",
+      "default": "#FF0000",
+      "choices": {
+        "#FF0000": "Red",
+        "#00FF00": "Green",
+        "#0000FF": "Blue"
+      }
+    },
+    "decimal": {
+      "type": "decimal",
+      "name": "Decimal",
+      "default": 1.1
+    },
+    "decimal_array": {
+      "type": "decimal_array",
+      "name": "DecimalArray",
+      "default": []
+    },
+    "decimal_choices": {
+      "type": "decimal",
+      "name": "DecimalChoices",
+      "default": 3.3,
+      "choices": {
+        "2.2": "Two",
+        "3.3": "Three",
+        "4.4": "Four"
+      }
+    },
+    "image": {
+      "type": "image",
+      "name": "Image"
+    },
+    "integer": {
+      "type": "integer",
+      "name": "Integer",
+      "default": 1
+    },
+    "integer_array": {
+      "type": "integer_array",
+      "name": "IntegerArray",
+      "default": []
+    },
+    "integer_choices": {
+      "type": "integer",
+      "name": "IntegerChoices",
+      "default": 3,
+      "choices": {
+        "2": "Two",
+        "3": "Three",
+        "4": "Four"
+      }
+    },
+    "string": {
+      "type": "string",
+      "name": "String",
+      "default": "abc"
+    },
+    "string_array": {
+      "type": "string_array",
+      "name": "StringArray",
+      "default": []
+    },
+    "string_choices": {
+      "type": "string",
+      "name": "StringChoices",
+      "default": "abc",
+      "choices": {
+        "abc": "Abc",
+        "def": "Def",
+        "xyz": "Xyz"
+      }
+    }
+  }
+}

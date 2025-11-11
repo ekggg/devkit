@@ -1,0 +1,5 @@
+.ekg
+cli/
+client/
+widget/
+*config.*

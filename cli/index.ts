@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -9,8 +9,11 @@ yargs(hideBin(process.argv))
   .command(
     'dev [dir]',
     'Runs the EKG devkit, watching for changes',
-    (yargs) => yargs.positional('dir', { type: 'string', describe: 'Folder to watch', default: '.' }),
-    ({ dir }) => dev(dir),
+    (yargs) =>
+      yargs
+        .positional('dir', { type: 'string', describe: 'Folder to watch', default: '.' })
+        .option('dev', { alias: 'd', type: 'boolean', description: 'Internal option when developing the EKG CLI', hidden: true }),
+    (o) => dev(o.dir, o.dev ?? false),
   )
   .command(
     'sync [dir]',

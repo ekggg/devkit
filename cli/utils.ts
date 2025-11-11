@@ -3,9 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { manifestSchema } from '../client/zod'
 
-export async function getPaths(dir: string) {
-  const devkit = fileURLToPath(new URL('..', import.meta.url))
-
+export async function getPaths(dir: string, dev: boolean) {
   const root = path.resolve(dir)
   const ekg = `${root}/.ekg`
   const state = `${ekg}/state.json`
@@ -13,16 +11,18 @@ export async function getPaths(dir: string) {
   const widget = await getManifestPath(root)
   const manifest = `${widget}/manifest.json`
 
-  const server = `${devkit}/client`
+  const devkit = fileURLToPath(new URL(dev ? '..' : '.', import.meta.url))
+  const node_modules = dev ? devkit : `${devkit}/../../..`
+  const server = dev ? `${devkit}/client` : devkit
   const relative = (dir: string) => path.relative(server, dir)
 
   return {
-    devkit,
     root,
     ekg,
     state,
     widget,
     manifest,
+    node_modules,
     server,
     relative,
   }
@@ -64,7 +64,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
 }
 
 async function download(dir: string, file: string) {
-  const r = await fetch(`http://localhost:4000/assets/js/${file}`)
+  const r = await fetch(`https://ekg.gg/assets/js/${file}`)
   const d = await r.bytes()
   await fs.writeFile(`${dir}/${file}`, d)
 }
