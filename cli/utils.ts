@@ -5,16 +5,17 @@ import { manifestSchema } from '../client/zod'
 
 export async function getPaths(dir: string, dev: boolean) {
   const root = path.resolve(dir)
-  const ekg = `${root}/.ekg`
-  const state = `${ekg}/state.json`
 
   const widget = await getManifestPath(root)
   const manifest = `${widget}/manifest.json`
 
-  const devkit = fileURLToPath(new URL(dev ? '..' : '.', import.meta.url))
-  const node_modules = dev ? devkit : `${devkit}/../../..`
-  const server = dev ? `${devkit}/client` : devkit
+  const devkit = fileURLToPath(new URL('..', import.meta.url))
+  const node_modules = dev ? devkit : `${devkit}/../..`
+  const server = dev ? `${devkit}/client` : `${devkit}/dist`
   const relative = (dir: string) => path.relative(server, dir)
+
+  const ekg = `${devkit}/.runtime`
+  const state = `${ekg}/state.json`
 
   return {
     root,

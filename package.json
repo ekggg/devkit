@@ -1,8 +1,9 @@
 {
   "name": "@ekg_gg/devkit",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "bin": "dist/index.mjs",
+  "types": ".runtime/types.d.ts",
   "scripts": {
     "dev": "bun run cli/index.ts dev --dev",
     "build": "tsdown && vite build"

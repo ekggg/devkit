@@ -10,7 +10,7 @@ export async function dev(dir: string, dev: boolean) {
   const server = await createServer({
     configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
-    server: { fs: { allow: [paths.node_modules, paths.ekg, paths.widget] } },
+    server: { fs: { allow: [paths.node_modules, paths.widget] } },
     plugins: [
       {
         name: 'EKG Dev Kit',
