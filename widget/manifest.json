@@ -20,7 +20,7 @@
     "color_array": {
       "type": "color_array",
       "name": "ColorArray",
-      "default": []
+      "default": ["#FF0000", "#00FF00", "#0000FF"]
     },
     "color_choices": {
       "type": "color",
@@ -40,7 +40,7 @@
     "decimal_array": {
       "type": "decimal_array",
       "name": "DecimalArray",
-      "default": []
+      "default": [2.2, 3.3, 4.4]
     },
     "decimal_choices": {
       "type": "decimal",
@@ -64,7 +64,7 @@
     "integer_array": {
       "type": "integer_array",
       "name": "IntegerArray",
-      "default": []
+      "default": [2, 3, 4]
     },
     "integer_choices": {
       "type": "integer",
@@ -84,7 +84,7 @@
     "string_array": {
       "type": "string_array",
       "name": "StringArray",
-      "default": []
+      "default": ["abc", "def", "xyz"]
     },
     "string_choices": {
       "type": "string",

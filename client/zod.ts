@@ -30,6 +30,7 @@ export const manifestSchema = z.object({
       z.looseObject({
         type: z.string().default(''),
         name: z.string().default(''),
+        description: z.string().optional(),
       }),
     )
     .optional(),

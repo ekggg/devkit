@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @layer base {
   * {
@@ -21,7 +21,68 @@
 }
 
 @theme {
-  --font-sans: "Inter Variable", sans-serif;
-  --font-sans--font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  --font-sans: 'Inter Variable', sans-serif;
+  --font-sans--font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   --anchor-gap: 0.5em;
+}
+
+/* Allow custom styling for select elements */
+@custom-variant picker (&::picker(select));
+@custom-variant picker-icon (&::picker-icon);
+@custom-variant checkmark (&::checkmark);
+
+@utility appearance-select {
+  appearance: base-select;
+}
+
+/* Apply transition to all select elements */
+::picker(select) {
+  opacity: 0;
+  transition: opacity 300ms allow-discrete;
+  position-try-fallbacks: flip-block;
+}
+
+::picker(select):popover-open {
+  opacity: 1;
+}
+
+@starting-style {
+  ::picker(select):popover-open {
+    opacity: 0;
+  }
+}
+
+/* Fallback for Firefox which doesn't support base-select yet */
+@supports not (appearance: base-select) {
+  select {
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    color: var(--color-slate-200);
+    background-color: var(--color-slate-950);
+    padding: calc(var(--spacing) * 2);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+  }
+
+  select:hover {
+    color: var(--color-white);
+    background-color: color-mix(in oklab, var(--color-slate-950) 50%, transparent);
+  }
+
+  select:open {
+    color: var(--color-white);
+    border-color: var(--color-white);
+  }
+
+  option {
+    color: var(--color-slate-200);
+    background-color: var(--color-slate-950);
+    font-weight: var(--font-weight-normal);
+  }
+
+  option:hover,
+  option:focus {
+    color: black;
+  }
 }
