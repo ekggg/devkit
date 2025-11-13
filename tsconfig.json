@@ -25,5 +25,6 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true
   },
+  "include": [".runtime/devkit.d.ts", "ekg.d.ts", "**/*"],
   "exclude": ["dist", "node_modules"]
 }

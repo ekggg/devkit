@@ -37,7 +37,13 @@ async function getManifestPath(dir: string) {
 }
 
 export async function downloadDevkit(dir: string, force?: boolean) {
-  const files = ['devkit.d.ts', 'devkit.js', 'widget-worker.js', 'emscripten-module.wasm']
+  const files = [
+    'assets/js/devkit.d.ts',
+    'assets/js/devkit.js',
+    'assets/js/widget-worker.js',
+    'assets/js/emscripten-module.wasm',
+    'schemas/events.json',
+  ]
 
   await fs.mkdir(dir, { recursive: true })
 
@@ -48,7 +54,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
   }
 
   const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
-  const stats = await Promise.allSettled(files.map((f) => fs.stat(`${dir}/${f}`)))
+  const stats = await Promise.allSettled(files.map((f) => fs.stat(`${dir}/${path.basename(f)}`)))
   const allExist = stats.every((s) => s.status === 'fulfilled' && s.value.isFile())
   const allNew = stats.every((s) => s.status === 'fulfilled' && s.value.isFile() && s.value.mtimeMs > Date.now() - ONE_WEEK_MS)
   if (allNew && !force) return
@@ -65,9 +71,9 @@ export async function downloadDevkit(dir: string, force?: boolean) {
 }
 
 async function download(dir: string, file: string) {
-  const r = await fetch(`https://ekg.gg/assets/js/${file}`)
+  const r = await fetch(`https://ekg.gg/${file}`)
   const d = await r.bytes()
-  await fs.writeFile(`${dir}/${file}`, d)
+  await fs.writeFile(`${dir}/${path.basename(file)}`, d)
 }
 
 export async function regenerateTypes(dir: string, file: string) {

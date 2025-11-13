@@ -28,31 +28,43 @@ export async function dev(dir: string, dev: boolean) {
           }
         },
         load(id) {
+          const skipProcessingExts = ['json', 'css', 'hbs'].join('|')
           switch (id) {
             case '\0ekg:devkit':
-              return `export { loadWidget } from '/@fs${paths.ekg}/devkit.js'`
+              return `
+                export { loadWidget } from '/@fs${paths.ekg}/devkit.js'
+                export { default as EventSchema } from '/@fs${paths.ekg}/events.json'
+              `
             case '\0ekg:widget':
               return `
                 export { default as state } from '/@fs${paths.state}?raw'
 
-                export const widget = import.meta.glob('./**', {
+                const inline = import.meta.glob(['./**', '!**/*.(${skipProcessingExts})'], {
                   base: '${paths.relative(paths.widget)}',
                   query: '?inline',
                   import: 'default',
                   exhaustive: true,
                   eager: true,
                 })
+
+                const raw = import.meta.glob(['./**/*.(${skipProcessingExts})'], {
+                  base: '${paths.relative(paths.widget)}',
+                  query: '?raw',
+                  import: 'default',
+                  exhaustive: true,
+                  eager: true,
+                })
+
+                export const widget = { ...inline, ...raw }
               `
           }
         },
         transform(src, id) {
+          // Turn widget js/ts files into an exported string so it can be loaded into QuickJS
           if (id.startsWith(paths.widget) && !id.startsWith(paths.ekg)) {
-            switch (path.extname(id.replace(/\?inline$/, ''))) {
-              case '.json':
-              case '.hbs':
-              case '.js':
-              case '.ts':
-                return { code: `export default ${JSON.stringify(src)}` }
+            const ext = path.extname(id.replace(/\?inline$/, ''))
+            if (/\.[mc]?[tj]s$/.test(ext)) {
+              return { code: `export default ${JSON.stringify(src)}` }
             }
           }
         },

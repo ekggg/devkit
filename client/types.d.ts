@@ -9,6 +9,8 @@ declare module 'ekg:devkit' {
       settings: EKG.WidgetSettings
     },
   ): Promise<[Worker, () => void]>
+
+  export const EventSchema: unknown
 }
 
 declare module 'ekg:widget' {
