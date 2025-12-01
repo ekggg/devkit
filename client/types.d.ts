@@ -7,10 +7,14 @@ declare module 'ekg:devkit' {
       css: string
       assets: EKG.WidgetAssets
       settings: EKG.WidgetSettings
+      initialData: EKG.InitialData
     },
   ): Promise<[Worker, () => void]>
 
-  export const EventSchema: unknown
+  export const EventSchema: {
+    $defs: Record<string, any>
+    oneOf: { $ref: string }[]
+  }
 }
 
 declare module 'ekg:widget' {

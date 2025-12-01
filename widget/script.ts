@@ -3,7 +3,8 @@ EKG.registerWidget({
 
   initialState: (_ctx) => null,
 
-  handleEvent(_event, state, _ctx) {
+  handleEvent(event, state, _ctx) {
+    event.type !== 'TICK' && console.log(event)
     return state
   },
 })

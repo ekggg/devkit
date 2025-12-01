@@ -1,5 +1,7 @@
-import { loadWidget } from 'ekg:devkit'
+import { EventSchema, loadWidget } from 'ekg:devkit'
 import { useEffect, useRef, useState } from 'react'
+import { EventModal } from './event_modal'
+import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { ImageInput } from './ui/image_input'
 import { ColorInput, DecimalInput, Input, IntegerInput } from './ui/input'
@@ -47,9 +49,35 @@ export function App(props: { widget: Record<string, string>; state: string }) {
   }, [sceneRef.current])
   const scale = Math.min(sceneSize.width / state.width, sceneSize.height / state.height)
 
+  const [events, setEvents] = useState(
+    EventSchema.oneOf.map((o) => {
+      const name = o.$ref.split('/').at(-1)!
+      const type = EventSchema.$defs[name].properties.type.const
+      const schema = {
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        $defs: EventSchema.$defs,
+        ...EventSchema.$defs[name].properties.data,
+      }
+      const data = defaultEventData(schema.properties, state.events[type])
+      return { name, type, schema, data }
+    }),
+  )
+  useEffect(() => {
+    updateState({ events: Object.fromEntries(events.map((v) => [v.type, v.data])) })
+  }, [events])
+  const publishEvent = (name: string) => {
+    const e = events.find((e) => e.name === name)!
+    window.EkgBus.publish({
+      id: randString(60),
+      timestamp: Math.floor(Date.now() / 1000),
+      type: e.type,
+      data: e.data,
+    })
+  }
+
   return (
     <div className="flex h-screen dark:text-slate-100 dark:bg-slate-900">
-      <div className="bg-black/10 border-r border-white/10 w-65 contain-strict overflow-auto">
+      <div className="bg-black/10 border-r border-white/10 w-72 contain-strict overflow-auto">
         <div className="px-6 flex flex-col gap-4 pb-8">
           <h1 className="text-xl font-bold py-4">Widget Dev Kit</h1>
           <div className="flex gap-4">
@@ -89,9 +117,66 @@ export function App(props: { widget: Record<string, string>; state: string }) {
           </div>
         </div>
       </div>
-      <div className="bg-black/10 border-l border-white/10 w-65 contain-strict overflow-auto p-6"></div>
+      <div className="bg-black/10 border-l border-white/10 w-72 contain-strict overflow-auto">
+        <div className="px-6 flex flex-col gap-4 pb-8">
+          <h1 className="text-xl font-bold py-4">Test Events</h1>
+          {events.map((o) => (
+            <div key={o.name} className="flex gap-2">
+              <Button variant="secondary" size="md" className="grow" onClick={() => publishEvent(o.name)}>
+                {o.name}
+              </Button>
+              <Button variant="secondary" size="md" commandfor={`${o.name}-modal`} command="show-modal">
+                S
+              </Button>
+              <EventModal
+                id={`${o.name}-modal`}
+                name={o.name}
+                schema={o.schema}
+                data={o.data}
+                setData={(data) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, data } : i)))}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
+}
+
+function defaultEventData(properties: any, state: any) {
+  const saved = (name: string, t: string) =>
+    !!state?.[name] && (t === 'array' ? Array.isArray(state[name]) : typeof state[name] === t) ? state[name] : null
+
+  return Object.fromEntries(
+    Object.entries(properties).map(([name, schema]) => {
+      if (name === 'raw') return [name, saved(name, 'object') ?? {}]
+      if (typeof schema !== 'object' || !schema) return [name, null]
+      if ('const' in schema) return [name, schema.const]
+      if ('enum' in schema && Array.isArray(schema.enum)) return [name, schema.enum.includes(state?.[name]) ? state[name] : schema.enum[0]]
+      if (!('type' in schema)) return [name, null]
+      if (name.endsWith('At') && schema.type === 'integer') return [name, saved(name, 'number') ?? Math.floor(Date.now() / 1000)]
+      if (schema.type === 'string') return [name, saved(name, 'string') ?? randString(12)]
+      if (schema.type === 'boolean') return [name, saved(name, 'boolean') ?? false]
+      if (schema.type === 'integer') return [name, saved(name, 'number') ?? 2]
+      if (
+        schema.type === 'array' &&
+        'items' in schema &&
+        typeof schema.items === 'object' &&
+        schema.items &&
+        '$ref' in schema.items &&
+        schema.items.$ref === '#/$defs/ChatNode'
+      )
+        return [name, saved(name, 'array') ?? [{ type: 'text', text: randString(40) }]]
+      if (schema.type === 'array') return [name, saved(name, 'array') ?? []]
+      return [name, null]
+    }),
+  )
+}
+
+function randString(len: number) {
+  const buf = new Uint8Array(len)
+  crypto.getRandomValues(buf)
+  return Array.from(buf, (v) => v.toString(36).slice(-1)).join('')
 }
 
 function Widget({ state, manifest, widget }: { state: State; manifest: Manifest; widget: Record<string, string> }) {
@@ -111,7 +196,7 @@ function Widget({ state, manifest, widget }: { state: State; manifest: Manifest;
     if (!el || !template || !css || !js) return
 
     console.log('reloading widget')
-    const p = loadWidget(el, { template, js, css, assets, settings })
+    const p = loadWidget(el, { template, js, css, assets, settings, initialData: {} })
 
     return () => {
       p.then(([_worker, cleanup]) => cleanup())
