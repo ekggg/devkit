@@ -7,15 +7,15 @@ export async function getPaths(dir: string, dev: boolean) {
   const root = path.resolve(dir)
 
   const widget = await getManifestPath(root)
-  const manifest = `${widget}/manifest.json`
+  const manifest = path.join(widget, 'manifest.json')
 
   const devkit = fileURLToPath(new URL('..', import.meta.url))
-  const node_modules = dev ? devkit : `${devkit}/../..`
-  const server = dev ? `${devkit}/client` : `${devkit}/dist`
+  const node_modules = dev ? devkit : path.join(devkit, '..', '..')
+  const server = path.join(devkit, dev ? 'client' : 'dist')
   const relative = (dir: string) => path.relative(server, dir)
 
-  const ekg = `${devkit}/.runtime`
-  const state = `${ekg}/state.json`
+  const ekg = path.join(devkit, '.runtime')
+  const state = path.join(ekg, 'state.json')
 
   return {
     root,
@@ -48,7 +48,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
   await fs.mkdir(dir, { recursive: true })
 
   try {
-    await fs.writeFile(`${dir}/state.json`, '{}', { flag: 'wx' })
+    await fs.writeFile(path.join(dir, 'state.json'), '{}', { flag: 'wx' })
   } catch (_) {
     // Ignore failures, the state file probably already exists
   }
@@ -102,17 +102,17 @@ declare namespace EKG {
       case 'string':
       case 'color':
       case 'image':
-      case 'decimal':
         return 'string'
 
       case 'string_array':
       case 'color_array':
-      case 'decimal_array':
         return 'string[]'
 
+      case 'decimal':
       case 'integer':
         return 'number'
 
+      case 'decimal_array':
       case 'integer_array':
         return 'number[]'
 
@@ -129,10 +129,10 @@ declare namespace EKG {
     const data = manifestSchema.parse(JSON.parse(buf.toString('utf8')))
     const assets = objType(data.assets ?? {}, () => 'string')
     const settings = objType(data.settings ?? {}, settingType)
-    await fs.writeFile(`${dir}/ekg.d.ts`, types(assets, settings))
+    await fs.writeFile(path.join(dir, 'ekg.d.ts'), types(assets, settings))
   } catch (_) {
     try {
-      await fs.writeFile(`${dir}/ekg.d.ts`, types('{}', '{}'), { flag: 'wx' })
+      await fs.writeFile(path.join(dir, 'ekg.d.ts'), types('{}', '{}'), { flag: 'wx' })
     } catch (_) {
       // Ignore failures, the types file probably already exists
     }

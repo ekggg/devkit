@@ -10,16 +10,19 @@ export async function dev(dir: string, dev: boolean) {
   const server = await createServer({
     configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
-    server: { fs: { allow: [paths.node_modules, paths.widget] } },
+    server: {
+      fs: { allow: [paths.node_modules, paths.widget] },
+      watch: { ignored: [`!${paths.ekg}/**`] },
+    },
     plugins: [
       {
         name: 'EKG Dev Kit',
         configureServer(server) {
           server.ws.on('ekg:state', (data) => {
-            fs.writeFile(paths.state, JSON.stringify(data, null, 2))
+            fs.writeFile(paths.state, JSON.stringify(data, null, 2)).catch((r) => console.error('Failed to write state file.', r))
           })
           server.ws.on('ekg:manifest', (data) => {
-            fs.writeFile(paths.manifest, JSON.stringify(data, null, 2))
+            fs.writeFile(paths.manifest, JSON.stringify(data, null, 2)).catch((r) => console.error('Failed to write manifest file.', r))
           })
         },
         resolveId(id) {

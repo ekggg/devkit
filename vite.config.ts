@@ -13,4 +13,7 @@ export default defineConfig({
       external: ['ekg:widget', 'ekg:devkit', '@fontsource-variable/inter'],
     },
   },
+  define: {
+    'import.meta.hot': 'import.meta.hot', // Preserve import.meta.hot
+  },
 })
