@@ -10,6 +10,7 @@ export async function dev(dir: string, dev: boolean) {
   const server = await createServer({
     configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
+    define: { 'import.meta.hot': false },
     server: {
       fs: { allow: [paths.node_modules, paths.widget] },
       watch: { ignored: [`!${paths.ekg}/**`] },

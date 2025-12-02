@@ -42,16 +42,15 @@
   position-try-fallbacks: flip-block;
 }
 
-::picker(select):popover-open {
+:open::picker(select) {
   opacity: 1;
 }
 
 @starting-style {
-  ::picker(select):popover-open {
+  :open::picker(select) {
     opacity: 0;
   }
 }
-
 /* Fallback for Firefox which doesn't support base-select yet */
 @supports not (appearance: base-select) {
   select {
