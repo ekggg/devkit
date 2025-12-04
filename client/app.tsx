@@ -69,7 +69,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
     const e = events.find((e) => e.name === name)!
     manager.fireEvent({
       id: randString(60),
-      timestamp: Math.floor(Date.now() / 1000),
+      timestamp: Date.now(),
       type: e.type,
       data: e.data,
     } as EKG.Event)
@@ -154,7 +154,7 @@ function defaultEventData(properties: any, state: any) {
       if ('const' in schema) return [name, schema.const]
       if ('enum' in schema && Array.isArray(schema.enum)) return [name, schema.enum.includes(state?.[name]) ? state[name] : schema.enum[0]]
       if (!('type' in schema)) return [name, null]
-      if (name.endsWith('At') && schema.type === 'integer') return [name, saved(name, 'number') ?? Math.floor(Date.now() / 1000)]
+      if (name.endsWith('At') && schema.type === 'integer') return [name, saved(name, 'number') ?? Date.now()]
       if (schema.type === 'string') return [name, saved(name, 'string') ?? randString(12)]
       if (schema.type === 'boolean') return [name, saved(name, 'boolean') ?? false]
       if (schema.type === 'integer') return [name, saved(name, 'number') ?? 2]
@@ -199,7 +199,12 @@ function Widget({ state, manifest, widget }: { state: State; manifest: Manifest;
     const c = manager.createManagedWidget(el)
     setWidgetComponent(c)
 
+    const t = setInterval(() => {
+      manager.fireEvent({ type: 'TICK' })
+    }, 100)
+
     return () => {
+      clearInterval(t)
       setWidgetComponent(null)
       c.stop()
     }

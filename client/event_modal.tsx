@@ -119,7 +119,7 @@ const renderers = [
   {
     tester: rankWith(9, and(scopeEndsWith('At'), isIntegerControl)),
     renderer: withJsonFormsControlProps((props) => {
-      const d = new Date(props.data * 1000)
+      const d = new Date(props.data)
       const YYYY = d.getFullYear()
       const MM = `00${d.getMonth() + 1}`.slice(-2)
       const DD = `00${d.getDate()}`.slice(-2)
@@ -132,7 +132,7 @@ const renderers = [
           description={props.description}
           name={props.id}
           value={`${YYYY}-${MM}-${DD}T${hh}:${mm}:${ss}`}
-          update={(v) => props.handleChange(props.path, Math.floor(new Date(v).valueOf() / 1000))}
+          update={(v) => props.handleChange(props.path, new Date(v).valueOf())}
           type="datetime-local"
         />
       )
