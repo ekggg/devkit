@@ -1,15 +1,14 @@
 declare module 'ekg:devkit' {
-  export function loadWidget(
-    el: HTMLElement,
-    data: {
-      template: string
-      js: string
-      css: string
-      assets: EKG.WidgetAssets
-      settings: EKG.WidgetSettings
-      initialData: EKG.InitialData
-    },
-  ): Promise<[Worker, () => void]>
+  export type ManagedWidget = {
+    init(template: string, js: string, css: string, assets: EKG.WidgetAssets, settings: EKG.WidgetSettings): void
+    stop(): void
+  }
+
+  export const manager: {
+    setInitialData(data: EKG.InitialData): void
+    fireEvent(e: EKG.Event): void
+    createManagedWidget(el: HTMLElement): ManagedWidget
+  }
 
   export const EventSchema: {
     $defs: Record<string, any>

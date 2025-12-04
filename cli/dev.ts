@@ -36,7 +36,7 @@ export async function dev(dir: string, dev: boolean) {
           switch (id) {
             case '\0ekg:devkit':
               return `
-                export { loadWidget } from '/@fs${paths.ekg}/devkit.js'
+                export { manager } from '/@fs${paths.ekg}/devkit.js'
                 export { default as EventSchema } from '/@fs${paths.ekg}/events.json'
               `
             case '\0ekg:widget':

@@ -1,4 +1,4 @@
-import { EventSchema, loadWidget } from 'ekg:devkit'
+import { EventSchema, manager, type ManagedWidget } from 'ekg:devkit'
 import { useEffect, useRef, useState } from 'react'
 import { EventModal } from './event_modal'
 import { Button } from './ui/button'
@@ -67,12 +67,12 @@ export function App(props: { widget: Record<string, string>; state: string }) {
   }, [events])
   const publishEvent = (name: string) => {
     const e = events.find((e) => e.name === name)!
-    window.EkgBus.publish({
+    manager.fireEvent({
       id: randString(60),
       timestamp: Math.floor(Date.now() / 1000),
       type: e.type,
       data: e.data,
-    })
+    } as EKG.Event)
   }
 
   return (
@@ -191,17 +191,24 @@ function Widget({ state, manifest, widget }: { state: State; manifest: Manifest;
   )
 
   const ref = useRef(null)
+  const [widgetComponent, setWidgetComponent] = useState<ManagedWidget | null>(null)
   useEffect(() => {
     const el = ref.current as HTMLDivElement | null
-    if (!el || !template || !css || !js) return
+    if (!el) return
 
-    console.log('reloading widget')
-    const p = loadWidget(el, { template, js, css, assets, settings, initialData: {} })
+    const c = manager.createManagedWidget(el)
+    setWidgetComponent(c)
 
     return () => {
-      p.then(([_worker, cleanup]) => cleanup())
+      setWidgetComponent(null)
+      c.stop()
     }
-  }, [ref.current, template, css, js, JSON.stringify(assets), JSON.stringify(settings)])
+  }, [ref.current])
+  useEffect(() => {
+    if (!widgetComponent || !template || !js || !css) return
+    console.log('reloading widget')
+    widgetComponent.init(template, js, css, assets, settings)
+  }, [widgetComponent, template, css, js, JSON.stringify(assets), JSON.stringify(settings)])
 
   return <div ref={ref} className="size-full"></div>
 }
