@@ -31,6 +31,8 @@ export async function getPaths(dir: string, dev: boolean) {
 
 async function getManifestPath(dir: string) {
   for await (const filepath of fs.glob(`${dir}/**/manifest.json`)) {
+    if (filepath.includes('.runtime')) continue
+    if (filepath.includes('dist')) continue
     return path.dirname(filepath)
   }
   throw `No manifest.json found in ${dir}`
@@ -43,6 +45,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
     'assets/js/widget-worker.js',
     'assets/js/emscripten-module.wasm',
     'schemas/events.json',
+    'schemas/manifest.json',
   ]
 
   await fs.mkdir(dir, { recursive: true })
