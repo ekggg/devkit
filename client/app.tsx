@@ -1,5 +1,5 @@
 import { EventSchema, manager, type ManagedWidget } from 'ekg:devkit'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { EventModal } from './event_modal'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
@@ -179,6 +179,37 @@ function randString(len: number) {
   return Array.from(buf, (v) => v.toString(36).slice(-1)).join('')
 }
 
+const externalWidget = (() => {
+  setInterval(() => {
+    manager.fireEvent({ type: 'TICK' })
+  }, 100)
+
+  let nextID = BigInt(Math.floor(0xffffff * Math.random()))
+  let el: HTMLDivElement | null = null
+  let widget: ManagedWidget | null = null
+  const subs = new Map<string, () => void>()
+
+  return {
+    subscribe(fn: () => void) {
+      const id = (nextID++).toString()
+      subs.set(id, fn)
+      return () => {
+        subs.delete(id)
+      }
+    },
+    getSnapshot() {
+      return widget
+    },
+    register(nel: HTMLDivElement | null) {
+      if (nel === el) return
+      if (widget) widget.stop()
+      el = nel
+      widget = el ? manager.createManagedWidget(el) : null
+      subs.forEach((fn) => fn())
+    },
+  }
+})()
+
 function Widget({ state, manifest, widget }: { state: State; manifest: Manifest; widget: Record<string, string> }) {
   const template = widget[manifest.template]
   const css = widget[manifest.css]
@@ -190,32 +221,14 @@ function Widget({ state, manifest, widget }: { state: State; manifest: Manifest;
     }),
   )
 
-  const ref = useRef(null)
-  const [widgetComponent, setWidgetComponent] = useState<ManagedWidget | null>(null)
-  useEffect(() => {
-    const el = ref.current as HTMLDivElement | null
-    if (!el) return
-
-    const c = manager.createManagedWidget(el)
-    setWidgetComponent(c)
-
-    const t = setInterval(() => {
-      manager.fireEvent({ type: 'TICK' })
-    }, 100)
-
-    return () => {
-      clearInterval(t)
-      setWidgetComponent(null)
-      c.stop()
-    }
-  }, [ref.current])
+  const widgetComponent = useSyncExternalStore(externalWidget.subscribe, externalWidget.getSnapshot)
   useEffect(() => {
     if (!widgetComponent || !template || !js || !css) return
     console.log('reloading widget')
     widgetComponent.init(template, js, css, assets, settings)
   }, [widgetComponent, template, css, js, JSON.stringify(assets), JSON.stringify(settings)])
 
-  return <div ref={ref} className="size-full"></div>
+  return <div ref={externalWidget.register} className="size-full" />
 }
 
 function Setting({ setting, value, update }: { setting: { key: string } & Setting; value: any; update: (v: any) => void }) {

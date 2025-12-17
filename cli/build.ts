@@ -1,4 +1,4 @@
-import Ajv2020 from 'ajv/dist/2020'
+import Ajv2020 from 'ajv/dist/2020.js'
 import chalk from 'chalk'
 import fs from 'node:fs/promises'
 import path from 'node:path'
