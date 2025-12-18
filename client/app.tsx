@@ -156,6 +156,7 @@ function defaultEventData(properties: any, state: any) {
       if ('enum' in schema && Array.isArray(schema.enum)) return [name, schema.enum.includes(state?.[name]) ? state[name] : schema.enum[0]]
       if (!('type' in schema)) return [name, null]
       if (name.endsWith('At') && schema.type === 'integer') return [name, saved(name, 'number') ?? Date.now()]
+      if (name.endsWith('Cents') && schema.type === 'integer') return [name, saved(name, 'number') ?? 500]
       if (schema.type === 'string') return [name, saved(name, 'string') ?? randString(12)]
       if (schema.type === 'boolean') return [name, saved(name, 'boolean') ?? false]
       if (schema.type === 'integer') return [name, saved(name, 'number') ?? 2]
