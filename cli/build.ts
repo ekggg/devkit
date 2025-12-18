@@ -77,7 +77,7 @@ export async function build(dir: string, dev: boolean) {
       // Use very basic settings for the output. Should work fine in QuickJS
       format: 'esm',
       platform: 'neutral',
-      target: 'esnext',
+      target: 'chrome103',
       dts: false,
     })
   } catch (e) {
