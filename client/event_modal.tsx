@@ -139,6 +139,26 @@ const renderers = [
     }),
   },
   {
+    tester: rankWith(9, scopeEndIs('currency')),
+    renderer: withJsonFormsControlProps((props) => {
+      return (
+        <Select
+          label={props.label}
+          description={props.description}
+          name={props.id}
+          value={props.data}
+          update={(v) => props.handleChange(props.path, v)}
+          options={[
+            { label: 'US Dollar', value: 'USD' },
+            { label: 'Twitch Bits', value: 'BITS' },
+            { label: 'Euro', value: 'EUR' },
+            { label: 'Japanese Yen', value: 'JPY' },
+          ]}
+        />
+      )
+    }),
+  },
+  {
     tester: rankWith(
       9,
       schemaMatches((schema) => schema.type === 'array' && schema.items?.$ref === '#/$defs/ChatNode'),
