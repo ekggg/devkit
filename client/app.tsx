@@ -150,6 +150,7 @@ function defaultEventData(properties: any, state: any) {
   return Object.fromEntries(
     Object.entries(properties).map(([name, schema]) => {
       if (name === 'raw') return [name, saved(name, 'object') ?? {}]
+      if (name === 'currency') return [name, saved(name, 'string') ?? 'USD']
       if (typeof schema !== 'object' || !schema) return [name, null]
       if ('const' in schema) return [name, schema.const]
       if ('enum' in schema && Array.isArray(schema.enum)) return [name, schema.enum.includes(state?.[name]) ? state[name] : schema.enum[0]]
