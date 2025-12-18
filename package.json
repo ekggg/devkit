@@ -1,8 +1,13 @@
 {
   "name": "@ekg_gg/devkit",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "type": "module",
-  "bin": "dist/index.mjs",
+  "repository": "github:ekggg/devkit",
+  "bugs": "https://github.com/ekggg/devkit/issues",
+  "homepage": "https://ekg.gg",
+  "bin": {
+    "ekg": "dist/index.mjs"
+  },
   "types": ".runtime/devkit.d.ts",
   "scripts": {
     "dev": "bun run cli/index.ts dev --dev",
