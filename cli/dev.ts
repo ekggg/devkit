@@ -45,7 +45,6 @@ export async function dev(dir: string, dev: boolean) {
 
                 const inline = import.meta.glob(['./**', '!**/*.(${skipProcessingExts})'], {
                   base: '${paths.relative(paths.widget)}',
-                  query: '?inline',
                   import: 'default',
                   exhaustive: true,
                   eager: true,
