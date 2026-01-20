@@ -112,7 +112,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
                 transform: `scale(${scale})`,
               }}
             >
-              <Widget state={state} manifest={manifest} widget={props.widget} />
+              <Widget state={state} manifest={manifest} widget={props.widget} updateState={updateState} />
             </div>
           </div>
         </div>
@@ -212,7 +212,17 @@ const externalWidget = (() => {
   }
 })()
 
-function Widget({ state, manifest, widget }: { state: State; manifest: Manifest; widget: Record<string, string> }) {
+function Widget({
+  state,
+  manifest,
+  widget,
+  updateState,
+}: {
+  state: State
+  manifest: Manifest
+  widget: Record<string, string>
+  updateState: (v: Partial<State>) => void
+}) {
   const template = widget[manifest.template]
   const css = widget[manifest.css]
   const js = widget[manifest.js]
@@ -224,10 +234,30 @@ function Widget({ state, manifest, widget }: { state: State; manifest: Manifest;
   )
 
   const widgetComponent = useSyncExternalStore(externalWidget.subscribe, externalWidget.getSnapshot)
+
+  // Track the latest persistedState in a ref to avoid stale closures
+  const persistedStateRef = useRef(state.persistedState)
+  persistedStateRef.current = state.persistedState
+
+  // Track updateState in a ref to avoid stale closures
+  const updateStateRef = useRef(updateState)
+  updateStateRef.current = updateState
+
+  // Initialize widget and handle persistence
   useEffect(() => {
     if (!widgetComponent || !template || !js || !css) return
-    console.log('reloading widget')
-    widgetComponent.init(template, js, css, assets, settings)
+    widgetComponent.init(template, js, css, assets, settings, persistedStateRef.current)
+
+    const persist = async () => {
+      const persistedState = await widgetComponent.persist()
+      if (JSON.stringify(persistedState) === JSON.stringify(persistedStateRef.current)) return
+      updateStateRef.current({ persistedState })
+    }
+    const timer = setInterval(persist, 1000)
+    return () => {
+      persist()
+      clearInterval(timer)
+    }
   }, [widgetComponent, template, css, js, JSON.stringify(assets), JSON.stringify(settings)])
 
   return <div ref={externalWidget.register} className="size-full" />

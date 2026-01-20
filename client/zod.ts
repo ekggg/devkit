@@ -5,6 +5,7 @@ export const stateSchema = z.object({
   height: z.number().min(0).default(1000),
   settings: z.record(z.string(), z.unknown()).default({}),
   events: z.record(z.string(), z.unknown()).default({}),
+  persistedState: z.unknown().optional(),
 })
 export type State = z.infer<typeof stateSchema>
 
