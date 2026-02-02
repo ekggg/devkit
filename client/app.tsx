@@ -246,7 +246,15 @@ function Widget({
   // Initialize widget and handle persistence
   useEffect(() => {
     if (!widgetComponent || !template || !js || !css) return
-    widgetComponent.init(template, js, css, assets, settings, persistedStateRef.current)
+    widgetComponent.init({
+      template,
+      js,
+      css,
+      cdnDomain: '', // All local assets in the devkit are data URIs, which are already allowed
+      assets,
+      settings,
+      persistedState: persistedStateRef.current,
+    })
 
     const persist = async () => {
       const persistedState = await widgetComponent.persist()

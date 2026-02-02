@@ -1,6 +1,14 @@
 declare module 'ekg:devkit' {
   export type ManagedWidget = {
-    init(template: string, js: string, css: string, assets: EKG.WidgetAssets, settings: EKG.WidgetSettings, persistedState: unknown): void
+    init(opts: {
+      template: string
+      js: string
+      css: string
+      cdnDomain: string
+      assets: EKG.WidgetAssets
+      settings: EKG.WidgetSettings
+      persistedState: unknown
+    }): void
     persist(): Promise<unknown>
     stop(): void
   }
