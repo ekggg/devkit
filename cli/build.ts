@@ -33,7 +33,12 @@ export async function build(dir: string, dev: boolean) {
     assets.add(a.file)
   }
   for (const s of Object.values(manifest.settings ?? {})) {
-    if (['image'].includes(s.type) && s.default) assets.add(s.default)
+    if (['image', 'audio'].includes(s.type) && s.default) assets.add(s.default)
+    if (s.type === 'font' && s.custom) {
+      for (const v of Object.keys(s.custom)) {
+        assets.add(v)
+      }
+    }
   }
 
   // Ensure all the files exist
