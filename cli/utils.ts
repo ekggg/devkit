@@ -46,6 +46,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
     'assets/js/emscripten-module.wasm',
     'schemas/events.json',
     'schemas/manifest.json',
+    'schemas/fonts.json',
   ]
 
   await fs.mkdir(dir, { recursive: true })

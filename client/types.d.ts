@@ -5,6 +5,7 @@ declare module 'ekg:devkit' {
       js: string
       css: string
       cdnDomain: string
+      fonts: string
       assets: EKG.WidgetAssets
       settings: EKG.WidgetSettings
       persistedState: unknown
@@ -23,6 +24,12 @@ declare module 'ekg:devkit' {
     $defs: Record<string, any>
     oneOf: { $ref: string }[]
   }
+
+  export const Fonts: {
+    name: string
+    value: string
+    font_face: string
+  }[]
 }
 
 declare module 'ekg:widget' {

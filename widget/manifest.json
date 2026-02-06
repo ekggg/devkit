@@ -7,6 +7,11 @@
   "css": "styles.css",
   "js": "script.ts",
   "settings": {
+    "audio": {
+      "type": "audio",
+      "name": "Audio",
+      "default": ""
+    },
     "boolean": {
       "type": "boolean",
       "name": "Boolean",
@@ -51,6 +56,11 @@
         "3.3": "Three",
         "4.4": "Four"
       }
+    },
+    "font": {
+      "type": "font",
+      "name": "Font",
+      "default": ""
     },
     "image": {
       "type": "image",

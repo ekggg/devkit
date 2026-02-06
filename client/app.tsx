@@ -1,15 +1,18 @@
-import { EventSchema, manager, type ManagedWidget } from 'ekg:devkit'
+import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { EventModal } from './event_modal'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
-import { ImageInput } from './ui/image_input'
+import { FileInput } from './ui/file_input'
+import { FontSelector } from './ui/font_selector'
 import { ColorInput, DecimalInput, Input, IntegerInput } from './ui/input'
 import { InputArray } from './ui/input_array'
 import { Select } from './ui/select'
 import { manifestSchema, stateSchema, type Manifest, type State } from './zod'
 
 type Setting = NonNullable<Manifest['settings']>[string]
+
+const assetDefaults = ['audio', 'image']
 
 export function App(props: { widget: Record<string, string>; state: string }) {
   const state = stateSchema.parse(JSON.parse(props.state))
@@ -27,7 +30,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
 
   const settings = Object.entries(manifest.settings ?? {}).map(([key, value]) => ({
     setting: { ...value, key },
-    value: state.settings[key] ?? (value.type === 'image' ? props.widget[value.default as string] : value.default),
+    value: state.settings[key] ?? (assetDefaults.includes(value.type) ? props.widget[value.default as string] : value.default),
     update: (v: unknown) => updateState({ settings: { ...state.settings, [key]: v } }),
   }))
 
@@ -223,15 +226,59 @@ function Widget({
   widget: Record<string, string>
   updateState: (v: Partial<State>) => void
 }) {
+  const fontSetting = (value: string) => {
+    const font = Fonts.find((f) => f.value === value || f.name === value)
+    if (font) return [font.value, font.font_face] as const
+    const v = widget[value] || value
+    return [
+      simpleHash(v),
+      `
+        @font-face {
+          font-family: "${simpleHash(v)}";
+          font-style: normal;
+          font-display: swap;
+          src: url("${v}");
+        }
+      `,
+    ] as const
+  }
+
   const template = widget[manifest.template]
   const css = widget[manifest.css]
   const js = widget[manifest.js]
-  const assets: any = Object.fromEntries(Object.entries(manifest.assets ?? {}).map(([key, { file }]) => [key, widget[file]]))
-  const settings: any = Object.fromEntries(
-    Object.entries(manifest.settings ?? {}).map(([key, { type, default: d }]) => {
-      return [key, state.settings[key] ?? (type === 'image' ? widget[d as string] : d)]
+  const assets: any = Object.fromEntries(
+    Object.entries(manifest.assets ?? {}).map(([key, { file, type }]) => {
+      let v = widget[file]!
+      if (type === 'font') v = simpleHash(v)
+      return [key, v]
     }),
   )
+  const settings: any = Object.fromEntries(
+    Object.entries(manifest.settings ?? {}).map(([key, { type, default: d }]) => {
+      let v = (state.settings[key] ?? (assetDefaults.includes(type) ? widget[d as string] : d)) as string
+      if (type === 'font') {
+        const [vv] = fontSetting(v)
+        v = vv
+      }
+      return [key, v]
+    }),
+  )
+  const fonts =
+    Object.values(manifest.assets ?? {})
+      .map(({ file, type }) => {
+        if (type !== 'font') return ''
+        const [_k, css] = fontSetting(widget[file]!)
+        return css
+      })
+      .join('') +
+    Object.entries(manifest.settings ?? {})
+      .map(([key, { type, default: d }]) => {
+        if (type !== 'font') return ''
+        let value = (state.settings[key] ?? d) as string
+        const [_k, css] = fontSetting(value)
+        return css
+      })
+      .join('')
 
   const widgetComponent = useSyncExternalStore(externalWidget.subscribe, externalWidget.getSnapshot)
 
@@ -251,6 +298,7 @@ function Widget({
       js,
       css,
       cdnDomain: '', // All local assets in the devkit are data URIs, which are already allowed
+      fonts,
       assets,
       settings,
       persistedState: persistedStateRef.current,
@@ -266,7 +314,7 @@ function Widget({
       persist()
       clearInterval(timer)
     }
-  }, [widgetComponent, template, css, js, JSON.stringify(assets), JSON.stringify(settings)])
+  }, [widgetComponent, template, css, js, fonts, JSON.stringify(assets), JSON.stringify(settings)])
 
   return <div ref={externalWidget.register} className="size-full" />
 }
@@ -295,6 +343,8 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
     update: update,
   } as const
   switch (setting.type) {
+    case 'audio':
+      return <FileInput kind="audio" {...commonProps} />
     case 'boolean':
       return <Checkbox {...commonProps} />
     case 'color':
@@ -305,8 +355,17 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
       return <DecimalInput {...commonProps} />
     case 'decimal_array':
       return <InputArray<number> {...commonProps} render={(i) => <DecimalInput {...i} />} />
+    case 'font':
+      const options = [{ label: 'Built-in Fonts', options: Fonts.map(({ name, value }) => ({ name, value })) }]
+      if (setting.custom) {
+        options.unshift({
+          label: "Artist's Fonts",
+          options: Object.entries(setting.custom).map(([value, name]: [string, string]) => ({ name, value })),
+        })
+      }
+      return <FontSelector options={options} {...commonProps} />
     case 'image':
-      return <ImageInput {...commonProps} />
+      return <FileInput kind="image" {...commonProps} />
     case 'integer':
       return <IntegerInput {...commonProps} />
     case 'integer_array':
@@ -317,4 +376,14 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
       return <InputArray<string> {...commonProps} render={(i) => <Input type="text" {...i} />} />
   }
   return null
+}
+
+function simpleHash(str: string) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+  }
+  // Convert to 32bit unsigned integer in base 36 and pad with "0" to ensure length is 7.
+  return 'h' + (hash >>> 0).toString(36).padStart(7, '0')
 }

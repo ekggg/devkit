@@ -38,6 +38,7 @@ export async function dev(dir: string, dev: boolean) {
               return `
                 export { manager } from '/@fs${paths.ekg}/devkit.js'
                 export { default as EventSchema } from '/@fs${paths.ekg}/events.json'
+                export { default as Fonts } from '/@fs${paths.ekg}/fonts.json'
               `
             case '\0ekg:widget':
               return `
