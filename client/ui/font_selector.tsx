@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export type FontOption = {
   name: string
@@ -34,6 +34,11 @@ export function FontSelector({ label, description, name, value, options, update 
   const [selected, setSelected] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+
+  // Keep the displayed font up-to-date if the manifest/state manually changes
+  useEffect(() => {
+    setFilter(valueToName.get(value) ?? '')
+  }, [value])
 
   const filteredGroups = useMemo(() => {
     if (!filter) return options

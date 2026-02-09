@@ -60,7 +60,10 @@
     "font": {
       "type": "font",
       "name": "Font",
-      "default": ""
+      "default": "Faith",
+      "custom": {
+        "faith.otf": "Faith"
+      }
     },
     "image": {
       "type": "image",

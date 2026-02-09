@@ -30,7 +30,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
 
   const settings = Object.entries(manifest.settings ?? {}).map(([key, value]) => ({
     setting: { ...value, key },
-    value: state.settings[key] ?? (assetDefaults.includes(value.type) ? props.widget[value.default as string] : value.default),
+    value: state.settings[key] ?? defaultSetting(props.widget, value),
     update: (v: unknown) => updateState({ settings: { ...state.settings, [key]: v } }),
   }))
 
@@ -226,23 +226,6 @@ function Widget({
   widget: Record<string, string>
   updateState: (v: Partial<State>) => void
 }) {
-  const fontSetting = (value: string) => {
-    const font = Fonts.find((f) => f.value === value || f.name === value)
-    if (font) return [font.value, font.font_face] as const
-    const v = widget[value] || value
-    return [
-      simpleHash(v),
-      `
-        @font-face {
-          font-family: "${simpleHash(v)}";
-          font-style: normal;
-          font-display: swap;
-          src: url("${v}");
-        }
-      `,
-    ] as const
-  }
-
   const template = widget[manifest.template]
   const css = widget[manifest.css]
   const js = widget[manifest.js]
@@ -254,11 +237,11 @@ function Widget({
     }),
   )
   const settings: any = Object.fromEntries(
-    Object.entries(manifest.settings ?? {}).map(([key, { type, default: d }]) => {
-      let v = (state.settings[key] ?? (assetDefaults.includes(type) ? widget[d as string] : d)) as string
-      if (type === 'font') {
-        const [vv] = fontSetting(v)
-        v = vv
+    Object.entries(manifest.settings ?? {}).map(([key, setting]) => {
+      let v = (state.settings[key] ?? defaultSetting(widget, setting)) as string
+      if (setting.type === 'font') {
+        const [k, _css] = fontSetting(widget, v)
+        v = k
       }
       return [key, v]
     }),
@@ -267,15 +250,15 @@ function Widget({
     Object.values(manifest.assets ?? {})
       .map(({ file, type }) => {
         if (type !== 'font') return ''
-        const [_k, css] = fontSetting(widget[file]!)
+        const [_k, css] = fontSetting(widget, file)
         return css
       })
       .join('') +
     Object.entries(manifest.settings ?? {})
-      .map(([key, { type, default: d }]) => {
-        if (type !== 'font') return ''
-        let value = (state.settings[key] ?? d) as string
-        const [_k, css] = fontSetting(value)
+      .map(([key, setting]) => {
+        if (setting.type !== 'font') return ''
+        let v = (state.settings[key] ?? defaultSetting(widget, setting)) as string
+        const [_k, css] = fontSetting(widget, v)
         return css
       })
       .join('')
@@ -317,6 +300,38 @@ function Widget({
   }, [widgetComponent, template, css, js, fonts, JSON.stringify(assets), JSON.stringify(settings)])
 
   return <div ref={externalWidget.register} className="size-full" />
+}
+
+function defaultSetting(widget: Record<string, string>, setting: Setting) {
+  if (setting.type === 'font') {
+    if (!setting.default) return null
+    const v =
+      // The default might be the name of a built-in font
+      Fonts.find((f) => f.name === setting.default)?.value ||
+      // Or it might be the name of a custom font (which is stored as value => key)
+      Object.entries(setting.custom || {}).find((v) => v[1] === setting.default)?.[0]
+    if (v) return v
+    throw new Error(`Invalid default value for setting "${setting.name}". Expected a font name, either built-in or from the custom array.`)
+  }
+  if (assetDefaults.includes(setting.type)) return widget[setting.default as string]
+  return setting.default
+}
+function fontSetting(widget: Record<string, string>, value: string) {
+  const font = Fonts.find((f) => f.value === value)
+  if (font) return [font.value, font.font_face] as const
+  const v = widget[value]
+  if (!v) throw new Error(`Missing font file: ${value}`)
+  return [
+    simpleHash(v),
+    `
+      @font-face {
+        font-family: "${simpleHash(v)}";
+        font-style: normal;
+        font-display: swap;
+        src: url("${v}");
+      }
+    `,
+  ] as const
 }
 
 function Setting({ setting, value, update }: { setting: { key: string } & Setting; value: any; update: (v: any) => void }) {
