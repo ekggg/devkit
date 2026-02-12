@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import path from 'node:path'
 import { createServer } from 'vite'
 import { downloadDevkit, getPaths, regenerateTypes } from './utils'
 
@@ -66,9 +65,9 @@ export async function dev(dir: string, dev: boolean) {
         },
         transform(src, id) {
           // Turn widget js/ts files into an exported string so it can be loaded into QuickJS
+          // also any unknown files are transformed into an exported string
           if (id.startsWith(paths.widget) && !id.startsWith(paths.ekg)) {
-            const ext = path.extname(id.replace(/\?inline$/, ''))
-            if (/\.[mc]?[tj]s$/.test(ext)) {
+            if (!src.startsWith('export default ')) {
               return { code: `export default ${JSON.stringify(src)}` }
             }
           }

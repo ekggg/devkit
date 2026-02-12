@@ -124,7 +124,7 @@ export function FontSelector({ label, description, name, value, options, update 
         }}
         onChange={(e) => {
           setFilter(e.target.value)
-          if (selected && selected.toLowerCase().includes(e.target.value.toLowerCase())) {
+          if (selected && valueToName.get(selected)!.toLowerCase().includes(e.target.value.toLowerCase())) {
             // Keep the selected element in the viewport
             select(selected)
           } else {

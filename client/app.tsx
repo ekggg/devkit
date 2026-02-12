@@ -280,7 +280,9 @@ function Widget({
       template,
       js,
       css,
-      cdnDomain: '', // All local assets in the devkit are data URIs, which are already allowed
+      // All local assets in the devkit are data URIs, which are already allowed
+      // But fonts are loaded from our CDN
+      cdnDomain: 'https://cdn.ekg.gg',
       fonts,
       assets,
       settings,
