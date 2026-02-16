@@ -75,7 +75,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
 }
 
 async function download(dir: string, file: string) {
-  const r = await fetch(`https://ekg.gg/${file}`)
+  const r = await fetch(`https://ekg.gg/${file}?t=${Date.now()}`)
   const d = await r.bytes()
   await fs.writeFile(`${dir}/${path.basename(file)}`, d)
 }
