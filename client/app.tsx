@@ -315,6 +315,7 @@ function defaultSetting(widget: Record<string, string>, setting: Setting) {
     if (v) return v
     throw new Error(`Invalid default value for setting "${setting.name}". Expected a font name, either built-in or from the custom array.`)
   }
+  if (setting.type === 'reward_ids') return []
   if (assetDefaults.includes(setting.type)) return widget[setting.default as string]
   return setting.default
 }
@@ -390,6 +391,7 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
     case 'string':
       return <Input type="text" {...commonProps} />
     case 'string_array':
+    case 'reward_ids':
       return <InputArray<string> {...commonProps} render={(i) => <Input type="text" {...i} />} />
   }
   return null

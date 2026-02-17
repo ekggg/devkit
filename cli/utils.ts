@@ -112,6 +112,7 @@ declare namespace EKG {
 
       case 'string_array':
       case 'color_array':
+      case 'reward_ids':
         return 'string[]'
 
       case 'decimal':
