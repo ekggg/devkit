@@ -8,14 +8,14 @@ import { FontSelector } from './ui/font_selector'
 import { ColorInput, DecimalInput, Input, IntegerInput } from './ui/input'
 import { InputArray } from './ui/input_array'
 import { Select } from './ui/select'
-import { manifestSchema, stateSchema, type Manifest, type State } from './zod'
+import { manifestSchema, parseState, type Manifest, type State } from './zod'
 
 type Setting = NonNullable<Manifest['settings']>[string]
 
 const assetDefaults = ['audio', 'image']
 
 export function App(props: { widget: Record<string, string>; state: string }) {
-  const state = stateSchema.parse(JSON.parse(props.state))
+  const state = parseState(props.state)
   const manifest = manifestSchema.parse(JSON.parse(props.widget['manifest.json']!))
 
   const updateState = (v: Partial<State>) => import.meta.hot?.send('ekg:state', { ...state, ...v })
