@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { normalizePath } from 'vite'
 import { manifestSchema } from '../client/zod'
 
 export async function getPaths(dir: string, dev: boolean) {
@@ -12,28 +13,28 @@ export async function getPaths(dir: string, dev: boolean) {
   const devkit = fileURLToPath(new URL('..', import.meta.url))
   const node_modules = dev ? devkit : path.join(devkit, '..', '..')
   const server = path.join(devkit, dev ? 'client' : 'dist')
-  const relative = (dir: string) => path.relative(server, dir)
+  const relative = (dir: string) => normalizePath(path.relative(server, dir))
 
   const ekg = path.join(devkit, '.runtime')
   const state = path.join(ekg, 'state.json')
 
   return {
-    root,
-    ekg,
-    state,
-    widget,
-    manifest,
-    node_modules,
-    server,
+    root: normalizePath(root),
+    ekg: normalizePath(ekg),
+    state: normalizePath(state),
+    widget: normalizePath(widget),
+    manifest: normalizePath(manifest),
+    node_modules: normalizePath(node_modules),
+    server: normalizePath(server),
     relative,
   }
 }
 
 async function getManifestPath(dir: string) {
-  for await (const filepath of fs.glob(`${dir}/**/manifest.json`)) {
+  for await (const filepath of fs.glob('**/manifest.json', { cwd: dir })) {
     if (filepath.includes('.runtime')) continue
     if (filepath.includes('dist')) continue
-    return path.dirname(filepath)
+    return path.dirname(path.join(dir, filepath))
   }
   throw `No manifest.json found in ${dir}`
 }
@@ -58,7 +59,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
   }
 
   const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
-  const stats = await Promise.allSettled(files.map((f) => fs.stat(`${dir}/${path.basename(f)}`)))
+  const stats = await Promise.allSettled(files.map((f) => fs.stat(path.join(dir, path.basename(f)))))
   const allExist = stats.every((s) => s.status === 'fulfilled' && s.value.isFile())
   const allNew = stats.every((s) => s.status === 'fulfilled' && s.value.isFile() && s.value.mtimeMs > Date.now() - ONE_WEEK_MS)
   if (allNew && !force) return
@@ -77,7 +78,7 @@ export async function downloadDevkit(dir: string, force?: boolean) {
 async function download(dir: string, file: string) {
   const r = await fetch(`https://ekg.gg/${file}?t=${Date.now()}`)
   const d = await r.bytes()
-  await fs.writeFile(`${dir}/${path.basename(file)}`, d)
+  await fs.writeFile(path.join(dir, path.basename(file)), d)
 }
 
 export async function regenerateTypes(dir: string, file: string) {

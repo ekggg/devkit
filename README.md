@@ -5,7 +5,7 @@ The official development toolkit for building [EKG.gg](https://ekg.gg) streaming
 ## Quick Start
 
 ```bash
-npm create ekg my-widget
+npm create ekg@latest my-widget
 cd my-widget
 npm run dev
 ```

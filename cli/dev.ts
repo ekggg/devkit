@@ -1,9 +1,12 @@
 import fs from 'node:fs/promises'
-import { createServer } from 'vite'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { createServer, normalizePath } from 'vite'
 import { downloadDevkit, getPaths, regenerateTypes } from './utils'
 
 export async function dev(dir: string, dev: boolean) {
   const paths = await getPaths(dir, dev)
+  const importPath = (...args: string[]) => `/@fs${pathToFileURL(path.join(...args)).pathname}`
   await downloadDevkit(paths.ekg)
 
   const server = await createServer({
@@ -35,15 +38,15 @@ export async function dev(dir: string, dev: boolean) {
           switch (id) {
             case '\0ekg:devkit':
               return `
-                export { manager } from '/@fs${paths.ekg}/devkit.js'
-                export { default as EventSchema } from '/@fs${paths.ekg}/events.json'
-                export { default as Fonts } from '/@fs${paths.ekg}/fonts.json'
+                export { manager } from '${importPath(paths.ekg, 'devkit.js')}'
+                export { default as EventSchema } from '${importPath(paths.ekg, 'events.json')}'
+                export { default as Fonts } from '${importPath(paths.ekg, 'fonts.json')}'
               `
             case '\0ekg:widget':
               return `
-                export { default as state } from '/@fs${paths.state}?raw'
+                export { default as state } from '${importPath(paths.state)}?raw'
 
-                const inline = import.meta.glob(['./**', '!**/*.(${skipProcessingExts})'], {
+                const inline = import.meta.glob(['./**', '!./**/*.(${skipProcessingExts})'], {
                   base: '${paths.relative(paths.widget)}',
                   query: '?inline',
                   import: 'default',
@@ -77,7 +80,11 @@ export async function dev(dir: string, dev: boolean) {
   })
 
   server.watcher.add(paths.manifest)
-  server.watcher.on('change', (path) => path === paths.manifest && regenerateTypes(paths.root, paths.manifest))
+  server.watcher.on('change', (path) => {
+    if (normalizePath(path) === paths.manifest) {
+      regenerateTypes(paths.root, paths.manifest)
+    }
+  })
   await regenerateTypes(paths.root, paths.manifest)
 
   await server.listen()
