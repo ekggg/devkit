@@ -92,16 +92,36 @@ export async function dev(dir: string, dev: boolean) {
   })
 
   server.watcher.add(paths.manifest)
-  server.watcher.on('change', (path) => {
-    if (normalizePath(path) === paths.manifest) {
+  server.watcher.on('change', (file) => {
+    const normalized = normalizePath(file)
+    if (normalized === paths.manifest) {
       regenerateTypes(paths.root, paths.manifest)
+    }
+    if (normalized.startsWith(paths.widget)) {
+      console.log(`${chalk.dim('changed')} ${path.relative(paths.widget, file)}`)
+    }
+  })
+  server.watcher.on('add', (file) => {
+    if (normalizePath(file).startsWith(paths.widget)) {
+      console.log(`${chalk.green('added')} ${path.relative(paths.widget, file)}`)
+    }
+  })
+  server.watcher.on('unlink', (file) => {
+    if (normalizePath(file).startsWith(paths.widget)) {
+      console.log(`${chalk.red('removed')} ${path.relative(paths.widget, file)}`)
     }
   })
   await regenerateTypes(paths.root, paths.manifest)
 
+  // Discover widget files
+  const widgetFiles = await fs.readdir(paths.widget, { recursive: true })
+  const files = widgetFiles.filter((f) => !f.startsWith('.'))
+
   await server.listen()
 
   const address = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0]
-  console.log(`\n  ${chalk.cyan('EKG Dev Kit')} ${chalk.dim('→')} ${chalk.cyan(address)}\n`)
+  console.log(`\n  ${chalk.cyan('EKG Dev Kit')} ${chalk.dim('→')} ${chalk.cyan(address)}`)
+  console.log(`  ${chalk.dim('widget')}  ${chalk.dim('→')} ${chalk.dim(paths.widget)}`)
+  console.log(`  ${chalk.dim('files')}   ${chalk.dim('→')} ${files.map((f) => chalk.dim(f)).join(chalk.dim(', '))}\n`)
   server.bindCLIShortcuts({ print: true })
 }
