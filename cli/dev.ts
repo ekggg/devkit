@@ -1,18 +1,18 @@
+import chalk from 'chalk'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import chalk from 'chalk'
-import { createLogger, createServer, normalizePath } from 'vite'
+import { createServer, normalizePath } from 'vite'
 import { downloadDevkit, getPaths, regenerateTypes } from './utils'
 
 export async function dev(dir: string, dev: boolean) {
   const paths = await getPaths(dir, dev)
   const importPath = (...args: string[]) => `/@fs${pathToFileURL(path.join(...args)).pathname}`
+  const isWidgetFile = (file: string) => file.startsWith(paths.widget) && !file.startsWith(paths.ekg)
   await downloadDevkit(paths.ekg)
 
-  const customLogger = createLogger('silent')
   const server = await createServer({
-    customLogger,
+    logLevel: 'silent',
     configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
     define: { 'import.meta.hot': false },
@@ -29,15 +29,6 @@ export async function dev(dir: string, dev: boolean) {
           })
           server.ws.on('ekg:manifest', (data) => {
             fs.writeFile(paths.manifest, JSON.stringify(data, null, 2)).catch((r) => console.error('Failed to write manifest file.', r))
-          })
-          server.ws.on('ekg:log', (data: { level: string; content: unknown[] }) => {
-            const color = data.level === 'error' ? chalk.red
-              : data.level === 'warn' ? chalk.yellow
-              : data.level === 'debug' ? chalk.gray
-              : chalk.cyan
-            const label = color(`[${data.level}]`)
-            const content = data.content.map((v) => typeof v === 'string' ? v : JSON.stringify(v)).join(' ')
-            console.log(`${label} ${content}`)
           })
         },
         resolveId(id) {
@@ -81,10 +72,8 @@ export async function dev(dir: string, dev: boolean) {
         transform(src, id) {
           // Turn widget js/ts files into an exported string so it can be loaded into QuickJS
           // also any unknown files are transformed into an exported string
-          if (id.startsWith(paths.widget) && !id.startsWith(paths.ekg)) {
-            if (!src.startsWith('export default ')) {
-              return { code: `export default ${JSON.stringify(src)}` }
-            }
+          if (isWidgetFile(id) && !src.startsWith('export default ')) {
+            return { code: `export default ${JSON.stringify(src)}` }
           }
         },
       },
@@ -92,36 +81,46 @@ export async function dev(dir: string, dev: boolean) {
   })
 
   server.watcher.add(paths.manifest)
-  server.watcher.on('change', (file) => {
-    const normalized = normalizePath(file)
-    if (normalized === paths.manifest) {
+  server.watcher.on('change', (path) => {
+    if (normalizePath(path) === paths.manifest) {
       regenerateTypes(paths.root, paths.manifest)
-    }
-    if (normalized.startsWith(paths.widget)) {
-      console.log(`${chalk.dim('changed')} ${path.relative(paths.widget, file)}`)
-    }
-  })
-  server.watcher.on('add', (file) => {
-    if (normalizePath(file).startsWith(paths.widget)) {
-      console.log(`${chalk.green('added')} ${path.relative(paths.widget, file)}`)
-    }
-  })
-  server.watcher.on('unlink', (file) => {
-    if (normalizePath(file).startsWith(paths.widget)) {
-      console.log(`${chalk.red('removed')} ${path.relative(paths.widget, file)}`)
     }
   })
   await regenerateTypes(paths.root, paths.manifest)
 
-  // Discover widget files
-  const widgetFiles = await fs.readdir(paths.widget, { recursive: true })
-  const files = widgetFiles.filter((f) => !f.startsWith('.'))
-
   await server.listen()
 
   const address = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0]
-  console.log(`\n  ${chalk.cyan('EKG Dev Kit')} ${chalk.dim('→')} ${chalk.cyan(address)}`)
-  console.log(`  ${chalk.dim('widget')}  ${chalk.dim('→')} ${chalk.dim(paths.widget)}`)
-  console.log(`  ${chalk.dim('files')}   ${chalk.dim('→')} ${files.map((f) => chalk.dim(f)).join(chalk.dim(', '))}\n`)
-  server.bindCLIShortcuts({ print: true })
+  console.log(`\n  EKG Dev Kit ${chalk.dim('→')} ${chalk.cyan(address)}`)
+  console.log(chalk.dim(`  widget      → ${paths.widget}\n`))
+
+  const dfmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: 'numeric', second: 'numeric' })
+  const log = (...args: unknown[]) => console.log(chalk.dim(dfmt.format(new Date())), ...args)
+
+  server.watcher.add(paths.widget)
+  server.watcher.on('change', (file) => {
+    if (isWidgetFile(normalizePath(file))) {
+      log(chalk.cyan('Changed'), path.relative(paths.widget, file))
+    }
+  })
+  server.watcher.on('add', (file) => {
+    if (isWidgetFile(normalizePath(file))) {
+      log(chalk.green('Added'), path.relative(paths.widget, file))
+    }
+  })
+  server.watcher.on('unlink', (file) => {
+    if (isWidgetFile(normalizePath(file))) {
+      log(chalk.red('Removed'), path.relative(paths.widget, file))
+    }
+  })
+  server.ws.on('ekg:log', (data: { level: string; content: unknown[] }) => {
+    const color = {
+      error: chalk.red,
+      warn: chalk.yellow,
+      info: chalk.cyan,
+      log: chalk.white,
+      debug: chalk.gray,
+    }[data.level]!
+    log(color(`Widget ${data.level}:`), ...data.content.slice(1))
+  })
 }
