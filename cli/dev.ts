@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { createServer, normalizePath } from 'vite'
+import chalk from 'chalk'
+import { createLogger, createServer, normalizePath } from 'vite'
 import { downloadDevkit, getPaths, regenerateTypes } from './utils'
 
 export async function dev(dir: string, dev: boolean) {
@@ -9,7 +10,9 @@ export async function dev(dir: string, dev: boolean) {
   const importPath = (...args: string[]) => `/@fs${pathToFileURL(path.join(...args)).pathname}`
   await downloadDevkit(paths.ekg)
 
+  const customLogger = createLogger('silent')
   const server = await createServer({
+    customLogger,
     configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
     define: { 'import.meta.hot': false },
@@ -26,6 +29,15 @@ export async function dev(dir: string, dev: boolean) {
           })
           server.ws.on('ekg:manifest', (data) => {
             fs.writeFile(paths.manifest, JSON.stringify(data, null, 2)).catch((r) => console.error('Failed to write manifest file.', r))
+          })
+          server.ws.on('ekg:log', (data: { level: string; content: unknown[] }) => {
+            const color = data.level === 'error' ? chalk.red
+              : data.level === 'warn' ? chalk.yellow
+              : data.level === 'debug' ? chalk.gray
+              : chalk.cyan
+            const label = color(`[${data.level}]`)
+            const content = data.content.map((v) => typeof v === 'string' ? v : JSON.stringify(v)).join(' ')
+            console.log(`${label} ${content}`)
           })
         },
         resolveId(id) {
@@ -89,6 +101,7 @@ export async function dev(dir: string, dev: boolean) {
 
   await server.listen()
 
-  server.printUrls()
+  const address = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0]
+  console.log(`\n  ${chalk.cyan('EKG Dev Kit')} ${chalk.dim('→')} ${chalk.cyan(address)}\n`)
   server.bindCLIShortcuts({ print: true })
 }

@@ -209,7 +209,9 @@ const externalWidget = (() => {
       if (nel === el) return
       if (widget) widget.stop()
       el = nel
-      widget = el ? manager.createManagedWidget(el) : null
+      widget = el ? manager.createManagedWidget(el, (level, content) => {
+        import.meta.hot?.send('ekg:log', { level, content })
+      }) : null
       subs.forEach((fn) => fn())
     },
   }
