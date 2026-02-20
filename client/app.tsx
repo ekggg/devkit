@@ -275,7 +275,7 @@ function Widget({
 
   // Initialize widget and handle persistence
   useEffect(() => {
-    if (!widgetComponent || !template || !js || !css) return
+    if (!widgetComponent || template == null || js == null || css == null) return
     widgetComponent.init({
       template,
       js,
