@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -7,9 +8,11 @@ import { downloadDevkit, getPaths, regenerateTypes } from './utils'
 export async function dev(dir: string, dev: boolean) {
   const paths = await getPaths(dir, dev)
   const importPath = (...args: string[]) => `/@fs${pathToFileURL(path.join(...args)).pathname}`
+  const isWidgetFile = (file: string) => file.startsWith(paths.widget) && !file.startsWith(paths.ekg)
   await downloadDevkit(paths.ekg)
 
   const server = await createServer({
+    logLevel: 'silent',
     configFile: dev ? 'vite.config.ts' : false,
     root: paths.server,
     define: { 'import.meta.hot': false },
@@ -69,10 +72,8 @@ export async function dev(dir: string, dev: boolean) {
         transform(src, id) {
           // Turn widget js/ts files into an exported string so it can be loaded into QuickJS
           // also any unknown files are transformed into an exported string
-          if (id.startsWith(paths.widget) && !id.startsWith(paths.ekg)) {
-            if (!src.startsWith('export default ')) {
-              return { code: `export default ${JSON.stringify(src)}` }
-            }
+          if (isWidgetFile(id) && !src.startsWith('export default ')) {
+            return { code: `export default ${JSON.stringify(src)}` }
           }
         },
       },
@@ -89,6 +90,37 @@ export async function dev(dir: string, dev: boolean) {
 
   await server.listen()
 
-  server.printUrls()
-  server.bindCLIShortcuts({ print: true })
+  const address = server.resolvedUrls?.local[0] ?? server.resolvedUrls?.network[0]
+  console.log(`\n  EKG Dev Kit ${chalk.dim('→')} ${chalk.cyan(address)}`)
+  console.log(chalk.dim(`  widget      → ${paths.widget}\n`))
+
+  const dfmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: 'numeric', second: 'numeric' })
+  const log = (...args: unknown[]) => console.log(chalk.dim(dfmt.format(new Date())), ...args)
+
+  server.watcher.add(paths.widget)
+  server.watcher.on('change', (file) => {
+    if (isWidgetFile(normalizePath(file))) {
+      log(chalk.cyan('Changed'), path.relative(paths.widget, file))
+    }
+  })
+  server.watcher.on('add', (file) => {
+    if (isWidgetFile(normalizePath(file))) {
+      log(chalk.green('Added'), path.relative(paths.widget, file))
+    }
+  })
+  server.watcher.on('unlink', (file) => {
+    if (isWidgetFile(normalizePath(file))) {
+      log(chalk.red('Removed'), path.relative(paths.widget, file))
+    }
+  })
+  server.ws.on('ekg:log', (data: { level: string; content: unknown[] }) => {
+    const color = {
+      error: chalk.red,
+      warn: chalk.yellow,
+      info: chalk.cyan,
+      log: chalk.white,
+      debug: chalk.gray,
+    }[data.level]!
+    log(color(`Widget ${data.level}:`), ...data.content.slice(1))
+  })
 }

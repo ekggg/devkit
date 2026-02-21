@@ -17,7 +17,7 @@ declare module 'ekg:devkit' {
   export const manager: {
     setInitialData(data: EKG.InitialData): void
     fireEvent(e: EKG.Event): void
-    createManagedWidget(el: HTMLElement): ManagedWidget
+    createManagedWidget(el: HTMLElement, logHandler?: (level: string, content: unknown[]) => void): ManagedWidget
   }
 
   export const EventSchema: {
