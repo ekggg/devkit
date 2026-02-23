@@ -15,7 +15,8 @@
     "boolean": {
       "type": "boolean",
       "name": "Boolean",
-      "default": false
+      "default": false,
+      "description": "here's a bit of a long description for testing"
     },
     "color": {
       "type": "color",

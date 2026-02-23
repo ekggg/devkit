@@ -1,4 +1,5 @@
 import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
+import { Settings } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { EventModal } from './event_modal'
 import { Button } from './ui/button'
@@ -129,7 +130,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
                 {o.name}
               </Button>
               <Button variant="secondary" size="md" commandfor={`${o.name}-modal`} command="show-modal">
-                S
+                <Settings className="size-4" />
               </Button>
               <EventModal
                 id={`${o.name}-modal`}
@@ -209,9 +210,12 @@ const externalWidget = (() => {
       if (nel === el) return
       if (widget) widget.stop()
       el = nel
-      widget = el ? manager.createManagedWidget(el, (level, content) => {
-        import.meta.hot?.send('ekg:log', { level, content })
-      }) : null
+      widget =
+        el ?
+          manager.createManagedWidget(el, (level, content) => {
+            import.meta.hot?.send('ekg:log', { level, content })
+          })
+        : null
       subs.forEach((fn) => fn())
     },
   }

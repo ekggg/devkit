@@ -1,8 +1,8 @@
 import { z } from 'zod/v4'
 
 export const stateSchema = z.object({
-  width: z.number().min(0).catch(1000),
-  height: z.number().min(0).catch(1000),
+  width: z.number().min(0).catch(1920),
+  height: z.number().min(0).catch(1080),
   settings: z.record(z.string(), z.unknown()).catch({}),
   events: z.record(z.string(), z.unknown()).catch({}),
   persistedState: z.unknown().optional(),

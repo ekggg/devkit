@@ -9,7 +9,7 @@ type Props = {
 export function Checkbox({ label, description, name, value, update }: Props) {
   return (
     <label className="flex gap-3">
-      <div className="group grid w-4 h-6 grid-cols-1 py-1">
+      <div className="group grid w-4 h-6 shrink-0 grid-cols-1 py-1">
         <input
           type="checkbox"
           name={name}
