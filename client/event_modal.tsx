@@ -14,6 +14,7 @@ import {
 import { JsonForms, JsonFormsDispatch, withJsonFormsControlProps, withJsonFormsEnumProps, withJsonFormsLayoutProps } from '@jsonforms/react'
 import { vanillaCells, vanillaRenderers } from '@jsonforms/vanilla-renderers'
 import Ajv2020 from 'ajv/dist/2020'
+import { parseChatNodesInput, stringifyChatNodesInput } from './fixtures'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { DecimalInput, Input, IntegerInput } from './ui/input'
@@ -164,13 +165,14 @@ const renderers = [
       schemaMatches((schema) => schema.type === 'array' && schema.items?.$ref === '#/$defs/ChatNode'),
     ),
     renderer: withJsonFormsControlProps((props) => {
+      const nodes = Array.isArray(props.data) ? (props.data as EKG.ChatNode[]) : []
       return (
         <Input
           label={props.label}
-          description={props.description}
+          description="A handful of emotes are supported: Kappa, FrankerZ, PeoplesChamp, BabyRage, CoolCat, NotLikeThis, OhMyDog, and VoHiYo."
           name={props.id}
-          value={props.data[0].text}
-          update={(v) => props.handleChange(props.path, [{ type: 'text', text: v }])}
+          value={stringifyChatNodesInput(nodes)}
+          update={(v) => props.handleChange(props.path, parseChatNodesInput(v))}
           type="textarea"
         />
       )
@@ -193,7 +195,15 @@ const renderers = [
   },
 ]
 
-export function EventModal(props: { id: string; name: string; schema: any; data: any; setData: (v: any) => void }) {
+export function EventModal(props: {
+  id: string
+  name: string
+  schema: any
+  data: any
+  useRandomData: boolean
+  setUseRandomData: (v: boolean) => void
+  setData: (v: any) => void
+}) {
   return (
     <dialog
       id={props.id}
@@ -202,14 +212,23 @@ export function EventModal(props: { id: string; name: string; schema: any; data:
     >
       <div className="font-bold text-xl pb-4">{props.name}</div>
       <form method="dialog" className="flex flex-col gap-2">
-        <JsonForms
-          schema={props.schema}
-          renderers={renderers}
-          cells={vanillaCells}
-          data={props.data}
-          onChange={({ data }) => props.setData(data)}
-          ajv={ajv}
+        <Checkbox
+          label="Use random data?"
+          description="When enabled, each event send generates a fresh payload."
+          name={`${props.id}-random`}
+          value={props.useRandomData}
+          update={props.setUseRandomData}
         />
+        <fieldset disabled={props.useRandomData} className="flex flex-col gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <JsonForms
+            schema={props.schema}
+            renderers={renderers}
+            cells={vanillaCells}
+            data={props.data}
+            onChange={({ data }) => props.setData(data)}
+            ajv={ajv}
+          />
+        </fieldset>
         <div className="h-2"></div>
         <Button type="submit" layout="block">
           Save

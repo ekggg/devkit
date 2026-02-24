@@ -2,6 +2,7 @@ import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
 import { Settings } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { EventModal } from './event_modal'
+import { defaultEventData, randomEventData, randString, simpleHash } from './fixtures'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { FileInput } from './ui/file_input'
@@ -62,20 +63,26 @@ export function App(props: { widget: Record<string, string>; state: string }) {
         $defs: EventSchema.$defs,
         ...EventSchema.$defs[name].properties.data,
       }
-      const data = defaultEventData(schema.properties, state.events[type])
-      return { name, type, schema, data }
+      const savedEvent = state.events[type] as Record<string, unknown> | undefined
+      const data = defaultEventData(schema.properties, savedEvent)
+      const savedEnableRandom = savedEvent?._enableRandom
+      const useRandomData = typeof savedEnableRandom === 'boolean' ? savedEnableRandom : true
+      return { name, type, schema, data, useRandomData }
     }),
   )
   useEffect(() => {
-    updateState({ events: Object.fromEntries(events.map((v) => [v.type, v.data])) })
+    updateState({
+      events: Object.fromEntries(events.map((v) => [v.type, { ...v.data, _enableRandom: v.useRandomData }])),
+    })
   }, [events])
   const publishEvent = (name: string) => {
     const e = events.find((e) => e.name === name)!
+    const data = e.useRandomData ? randomEventData(e.type, e.schema) : e.data
     manager.fireEvent({
       id: randString(60),
       timestamp: Date.now(),
       type: e.type,
-      data: e.data,
+      data,
     } as EKG.Event)
   }
 
@@ -137,6 +144,8 @@ export function App(props: { widget: Record<string, string>; state: string }) {
                 name={o.name}
                 schema={o.schema}
                 data={o.data}
+                useRandomData={o.useRandomData}
+                setUseRandomData={(useRandomData) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, useRandomData } : i)))}
                 setData={(data) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, data } : i)))}
               />
             </div>
@@ -145,44 +154,6 @@ export function App(props: { widget: Record<string, string>; state: string }) {
       </div>
     </div>
   )
-}
-
-function defaultEventData(properties: any, state: any) {
-  const saved = (name: string, t: string) =>
-    !!state?.[name] && (t === 'array' ? Array.isArray(state[name]) : typeof state[name] === t) ? state[name] : null
-
-  return Object.fromEntries(
-    Object.entries(properties).map(([name, schema]) => {
-      if (name === 'raw') return [name, saved(name, 'object') ?? {}]
-      if (name === 'currency') return [name, saved(name, 'string') ?? 'USD']
-      if (typeof schema !== 'object' || !schema) return [name, null]
-      if ('const' in schema) return [name, schema.const]
-      if ('enum' in schema && Array.isArray(schema.enum)) return [name, schema.enum.includes(state?.[name]) ? state[name] : schema.enum[0]]
-      if (!('type' in schema)) return [name, null]
-      if (name.endsWith('At') && schema.type === 'integer') return [name, saved(name, 'number') ?? Date.now()]
-      if (name.endsWith('Cents') && schema.type === 'integer') return [name, saved(name, 'number') ?? 500]
-      if (schema.type === 'string') return [name, saved(name, 'string') ?? randString(12)]
-      if (schema.type === 'boolean') return [name, saved(name, 'boolean') ?? false]
-      if (schema.type === 'integer') return [name, saved(name, 'number') ?? 2]
-      if (
-        schema.type === 'array' &&
-        'items' in schema &&
-        typeof schema.items === 'object' &&
-        schema.items &&
-        '$ref' in schema.items &&
-        schema.items.$ref === '#/$defs/ChatNode'
-      )
-        return [name, saved(name, 'array') ?? [{ type: 'text', text: randString(40) }]]
-      if (schema.type === 'array') return [name, saved(name, 'array') ?? []]
-      return [name, null]
-    }),
-  )
-}
-
-function randString(len: number) {
-  const buf = new Uint8Array(len)
-  crypto.getRandomValues(buf)
-  return Array.from(buf, (v) => v.toString(36).slice(-1)).join('')
 }
 
 const externalWidget = (() => {
@@ -401,14 +372,4 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
       return <InputArray<string> {...commonProps} render={(i) => <Input type="text" {...i} />} />
   }
   return null
-}
-
-function simpleHash(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-  }
-  // Convert to 32bit unsigned integer in base 36 and pad with "0" to ensure length is 7.
-  return 'h' + (hash >>> 0).toString(36).padStart(7, '0')
 }
