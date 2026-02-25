@@ -58,10 +58,10 @@ export async function downloadDevkit(dir: string, force?: boolean) {
     // Ignore failures, the state file probably already exists
   }
 
-  const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000
   const stats = await Promise.allSettled(files.map((f) => fs.stat(path.join(dir, path.basename(f)))))
   const allExist = stats.every((s) => s.status === 'fulfilled' && s.value.isFile())
-  const allNew = stats.every((s) => s.status === 'fulfilled' && s.value.isFile() && s.value.mtimeMs > Date.now() - ONE_WEEK_MS)
+  const allNew = stats.every((s) => s.status === 'fulfilled' && s.value.isFile() && s.value.mtimeMs > Date.now() - ONE_DAY_MS)
   if (allNew && !force) return
 
   try {
