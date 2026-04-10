@@ -9,6 +9,7 @@ declare module 'ekg:devkit' {
       assets: EKG.WidgetAssets
       settings: EKG.WidgetSettings
       persistedState: unknown
+      scheduleData?: EKG.ScheduleData
     }): void
     persist(): Promise<unknown>
     stop(): void

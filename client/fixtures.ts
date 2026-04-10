@@ -769,3 +769,71 @@ function randInt(min: number, max: number) {
   if (hi <= lo) return lo
   return Math.floor(Math.random() * (hi - lo + 1)) + lo
 }
+
+// --- Schedule widget fixtures ---
+
+import type { CalendarEvent } from './zod'
+
+const DAY_NAMES = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+
+export function getDefaultWeekStart(): string {
+  const now = new Date()
+  const day = now.getDay()
+  const diff = day === 0 ? -6 : 1 - day // Monday
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff)
+  return formatDate(monday)
+}
+
+function formatDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export function generateDefaultScheduleEvents(weekStart: string): CalendarEvent[] {
+  const start = new Date(weekStart + 'T00:00:00')
+  const templates: { dayOffset: number; time: string; title: string; subtitle?: string }[] = [
+    { dayOffset: 0, time: '18:00', title: 'Just Chatting', subtitle: 'Catching up with chat' },
+    { dayOffset: 1, time: '20:00', title: 'Ranked Grind', subtitle: 'Valorant' },
+    { dayOffset: 3, time: '19:00', title: 'Community Game Night', subtitle: 'Minecraft' },
+    { dayOffset: 4, time: '21:00', title: 'Late Night Stream', subtitle: 'Horror Games' },
+    { dayOffset: 5, time: '14:00', title: 'Weekend Marathon', subtitle: 'Variety' },
+    { dayOffset: 6, time: '16:00', title: 'Chill Sunday', subtitle: 'Art Stream' },
+  ]
+  return templates.map(({ dayOffset, time, title, subtitle }) => {
+    const d = new Date(start)
+    d.setDate(d.getDate() + dayOffset)
+    return { id: randString(8), date: formatDate(d), time, title, subtitle }
+  })
+}
+
+type ScheduleData = {
+  days: {
+    date: { year: number; month: number; day: number }
+    dayOfWeek: (typeof DAY_NAMES)[number]
+    events: { time: number; title: string; subtitle: string | null }[]
+  }[]
+}
+
+export function calendarEventsToScheduleData(weekStart: string, events: CalendarEvent[]): ScheduleData {
+  const start = new Date(weekStart + 'T00:00:00')
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start)
+    d.setDate(d.getDate() + i)
+    const dateStr = formatDate(d)
+    const dayOfWeek = DAY_NAMES[(d.getDay() + 6) % 7]!
+    const dayEvents = events
+      .filter((e) => e.date === dateStr)
+      .map((e) => {
+        const [hours, minutes] = e.time ? e.time.split(':').map(Number) : [0, 0]
+        const ts = new Date(d)
+        ts.setHours(hours!, minutes!, 0, 0)
+        return { time: ts.getTime(), title: e.title, subtitle: e.subtitle ?? null }
+      })
+      .sort((a, b) => a.time - b.time)
+    return {
+      date: { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() },
+      dayOfWeek,
+      events: dayEvents,
+    }
+  })
+  return { days }
+}

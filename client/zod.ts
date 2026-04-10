@@ -1,11 +1,24 @@
 import { z } from 'zod/v4'
 
+let _nextId = 0
+export const calendarEventSchema = z.object({
+  id: z.string().catch(() => `_${_nextId++}`),
+  date: z.string(),
+  time: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+})
+export type CalendarEvent = z.infer<typeof calendarEventSchema>
+
 export const stateSchema = z.object({
   width: z.number().min(0).catch(1920),
   height: z.number().min(0).catch(1080),
   settings: z.record(z.string(), z.unknown()).catch({}),
   events: z.record(z.string(), z.unknown()).catch({}),
   persistedState: z.unknown().optional(),
+  scheduleWeekStart: z.string().optional(),
+  scheduleEvents: z.array(calendarEventSchema).catch([]),
+  canvasBg: z.string().catch('#FFFFFF88'),
 })
 export type State = z.infer<typeof stateSchema>
 
@@ -19,6 +32,7 @@ export function parseState(state: string): State {
 
 export const manifestSchema = z.object({
   $schema: z.literal('https://ekg.gg/schemas/manifest.json').default('https://ekg.gg/schemas/manifest.json'),
+  type: z.enum(['overlay', 'schedule']).default('overlay'),
   name: z.string().optional(),
   version: z.string().optional(),
   description: z.string().optional(),

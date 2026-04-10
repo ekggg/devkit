@@ -1,30 +1,60 @@
 import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
 import { Settings } from 'lucide-react'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type SetStateAction } from 'react'
 import { EventModal } from './event_modal'
-import { defaultEventData, randomEventData, randString, simpleHash } from './fixtures'
+import {
+  calendarEventsToScheduleData,
+  defaultEventData,
+  generateDefaultScheduleEvents,
+  getDefaultWeekStart,
+  randomEventData,
+  randString,
+  simpleHash,
+} from './fixtures'
+import { SchedulePanel } from './schedule_panel'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { FileInput } from './ui/file_input'
 import { FontSelector } from './ui/font_selector'
 import { ColorInput, DecimalInput, Input, IntegerInput } from './ui/input'
+import type { CalendarEvent } from './zod'
 import { InputArray } from './ui/input_array'
 import { Select } from './ui/select'
 import { manifestSchema, parseState, type Manifest, type State } from './zod'
 
 type Setting = NonNullable<Manifest['settings']>[string]
 
+type TestEvent = {
+  name: string
+  type: string
+  schema: { $schema: string; $defs: Record<string, any>; properties?: Record<string, any> } & Record<string, any>
+  data: Record<string, unknown>
+  useRandomData: boolean
+}
+
 const assetDefaults = ['audio', 'image']
 
 export function App(props: { widget: Record<string, string>; state: string }) {
-  const state = parseState(props.state)
   const manifest = manifestSchema.parse(JSON.parse(props.widget['manifest.json']!))
+  const isSchedule = manifest.type === 'schedule'
+  const state = parseState(props.state)
 
   const updateState = (v: Partial<State>) => import.meta.hot?.send('ekg:state', { ...state, ...v })
   const updateManifest = (v: Partial<Manifest>) => import.meta.hot?.send('ekg:manifest', { ...manifest, ...v })
 
   const setWidth = (width: number) => updateState({ width })
   const setHeight = (height: number) => updateState({ height })
+
+  // Schedule state
+  const [scheduleWeekStart, setScheduleWeekStart] = useState(state.scheduleWeekStart ?? getDefaultWeekStart())
+  const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>(
+    state.scheduleEvents.length > 0 ? state.scheduleEvents : generateDefaultScheduleEvents(getDefaultWeekStart()),
+  )
+  useEffect(() => {
+    if (isSchedule) {
+      updateState({ scheduleWeekStart, scheduleEvents })
+    }
+  }, [scheduleWeekStart, scheduleEvents])
 
   const setName = (name: string) => updateManifest({ name })
   const setVersion = (version: string) => updateManifest({ version })
@@ -99,6 +129,13 @@ export function App(props: { widget: Record<string, string>; state: string }) {
           <Input type="text" label="Version:" name="version" value={manifest.version ?? ''} update={setVersion} />
           <Input type="textarea" label="Description:" name="description" value={manifest.description ?? ''} update={setDescription} />
 
+          <ColorInput
+            label="Canvas Background:"
+            name="canvasBg"
+            value={state.canvasBg}
+            update={(v) => updateState({ canvasBg: v })}
+          />
+
           <h1 className="text-lg font-bold pt-4">Settings</h1>
           {settings.map((s) => (
             <Setting key={s.setting.key} {...s} />
@@ -116,11 +153,12 @@ export function App(props: { widget: Record<string, string>; state: string }) {
             }}
           >
             <div
-              className="relative origin-top-left bg-white dark:bg-black"
+              className="relative origin-top-left"
               style={{
                 width: `${state.width}px`,
                 height: `${state.height}px`,
                 transform: `scale(${scale})`,
+                backgroundColor: state.canvasBg,
               }}
             >
               <Widget state={state} manifest={manifest} widget={props.widget} updateState={updateState} />
@@ -130,26 +168,14 @@ export function App(props: { widget: Record<string, string>; state: string }) {
       </div>
       <div className="bg-black/10 border-l border-white/10 w-72 contain-strict overflow-auto">
         <div className="px-6 flex flex-col gap-4 pb-8">
-          <h1 className="text-xl font-bold py-4">Test Events</h1>
-          {events.map((o) => (
-            <div key={o.name} className="flex gap-2">
-              <Button variant="secondary" size="md" className="grow" onClick={() => publishEvent(o.name)}>
-                {o.name}
-              </Button>
-              <Button variant="secondary" size="md" commandfor={`${o.name}-modal`} command="show-modal">
-                <Settings className="size-4" />
-              </Button>
-              <EventModal
-                id={`${o.name}-modal`}
-                name={o.name}
-                schema={o.schema}
-                data={o.data}
-                useRandomData={o.useRandomData}
-                setUseRandomData={(useRandomData) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, useRandomData } : i)))}
-                setData={(data) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, data } : i)))}
-              />
-            </div>
-          ))}
+          {isSchedule ?
+            <SchedulePanel
+              weekStart={scheduleWeekStart}
+              setWeekStart={setScheduleWeekStart}
+              events={scheduleEvents}
+              setEvents={setScheduleEvents}
+            />
+          : <TestEventsPanel events={events} setEvents={setEvents} publishEvent={publishEvent} />}
         </div>
       </div>
     </div>
@@ -203,6 +229,7 @@ function Widget({
   widget: Record<string, string>
   updateState: (v: Partial<State>) => void
 }) {
+  const scheduleData = calendarEventsToScheduleData(state.scheduleWeekStart ?? getDefaultWeekStart(), state.scheduleEvents)
   const template = widget[manifest.template]
   const css = widget[manifest.css]
   const js = widget[manifest.js]
@@ -264,6 +291,7 @@ function Widget({
       assets,
       settings,
       persistedState: persistedStateRef.current,
+      scheduleData,
     })
 
     const persist = async () => {
@@ -276,7 +304,7 @@ function Widget({
       persist()
       clearInterval(timer)
     }
-  }, [widgetComponent, template, css, js, fonts, JSON.stringify(assets), JSON.stringify(settings)])
+  }, [widgetComponent, template, css, js, fonts, JSON.stringify(assets), JSON.stringify(settings), JSON.stringify(scheduleData)])
 
   return <div ref={externalWidget.register} className="size-full" />
 }
@@ -372,4 +400,41 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
       return <InputArray<string> {...commonProps} render={(i) => <Input type="text" {...i} />} />
   }
   return null
+}
+
+function TestEventsPanel({
+  events,
+  setEvents,
+  publishEvent,
+}: {
+  events: TestEvent[]
+  setEvents: Dispatch<SetStateAction<TestEvent[]>>
+  publishEvent: (name: string) => void
+}) {
+  return (
+    <>
+      <h1 className="text-xl font-bold py-4">Test Events</h1>
+      {events.map((o) => (
+        <div key={o.name} className="flex gap-2">
+          <Button variant="secondary" size="md" className="grow" onClick={() => publishEvent(o.name)}>
+            {o.name}
+          </Button>
+          <Button variant="secondary" size="md" commandfor={`${o.name}-modal`} command="show-modal">
+            <Settings className="size-4" />
+          </Button>
+          <EventModal
+            id={`${o.name}-modal`}
+            name={o.name}
+            schema={o.schema}
+            data={o.data}
+            useRandomData={o.useRandomData}
+            setUseRandomData={(useRandomData) =>
+              setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, useRandomData } : i)))
+            }
+            setData={(data) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, data } : i)))}
+          />
+        </div>
+      ))}
+    </>
+  )
 }
