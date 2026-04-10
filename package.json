@@ -25,6 +25,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@formkit/auto-animate": "^0.9.0",
     "@jsonforms/core": "^3.6.0",
     "@jsonforms/react": "^3.6.0",
     "@jsonforms/vanilla-renderers": "^3.6.0",
