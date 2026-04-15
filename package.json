@@ -1,6 +1,6 @@
 {
   "name": "@ekg_gg/devkit",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "Development toolkit for building EKG.gg streaming widgets — local dev server, live preview, and build pipeline.",
   "type": "module",
   "repository": "github:ekggg/devkit",
