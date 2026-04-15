@@ -30,7 +30,7 @@ export async function build(dir: string, dev: boolean) {
   // Discover all files that need to be copied
   const assets = new Set<string>(['manifest.json', manifest.css, manifest.template])
   for (const a of Object.values(manifest.assets ?? {})) {
-    assets.add(a.file)
+    if (a.file) assets.add(a.file)
   }
   for (const s of Object.values(manifest.settings ?? {})) {
     if (['image', 'audio'].includes(s.type) && s.default) assets.add(s.default)

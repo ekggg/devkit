@@ -45,7 +45,8 @@ export const manifestSchema = z.object({
       z.string(),
       z.object({
         type: z.string().default(''),
-        file: z.string().default(''),
+        file: z.string().optional(),
+        builtin: z.string().optional(),
       }),
     )
     .optional(),

@@ -209,8 +209,9 @@ function Widget({
   const css = widget[manifest.css]
   const js = widget[manifest.js]
   const assets: any = Object.fromEntries(
-    Object.entries(manifest.assets ?? {}).map(([key, { file, type }]) => {
-      let v = widget[file]!
+    Object.entries(manifest.assets ?? {}).map(([key, { type, file, builtin }]) => {
+      if (builtin) return [key, builtin]
+      let v = widget[file!]!
       if (type === 'font') v = simpleHash(v)
       return [key, v]
     }),
@@ -227,9 +228,9 @@ function Widget({
   )
   const fonts =
     Object.values(manifest.assets ?? {})
-      .map(({ file, type }) => {
+      .map(({ type, file, builtin }) => {
         if (type !== 'font') return ''
-        const [_k, css] = fontSetting(widget, file)
+        const [_k, css] = fontSetting(widget, builtin || file!)
         return css
       })
       .join('') +
@@ -299,11 +300,12 @@ function defaultSetting(widget: Record<string, string>, setting: Setting) {
   if (assetDefaults.includes(setting.type)) return widget[setting.default as string]
   return setting.default
 }
+
 function fontSetting(widget: Record<string, string>, value: string) {
-  const font = Fonts.find((f) => f.value === value)
+  const font = Fonts.find((f) => f.value === value || f.name === value)
   if (font) return [font.value, font.font_face] as const
   const v = widget[value]
-  if (!v) throw new Error(`Missing font file: ${value}`)
+  if (!v) throw new Error(`Missing font file or builtin font: ${value}`)
   return [
     simpleHash(v),
     `

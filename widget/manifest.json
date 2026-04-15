@@ -6,6 +6,16 @@
   "template": "template.hbs",
   "css": "styles.css",
   "js": "script.ts",
+  "assets": {
+    "a": {
+      "type": "font",
+      "builtin": "Inter"
+    },
+    "b": {
+      "type": "font",
+      "file": "faith.otf"
+    }
+  },
   "settings": {
     "audio": {
       "type": "audio",
