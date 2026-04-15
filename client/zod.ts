@@ -1,4 +1,5 @@
 import { z } from 'zod/v4'
+import { generateDefaultScheduleEvents, getDefaultWeekStart } from './fixtures'
 
 let _nextId = 0
 export const calendarEventSchema = z.object({
@@ -16,8 +17,8 @@ export const stateSchema = z.object({
   settings: z.record(z.string(), z.unknown()).catch({}),
   events: z.record(z.string(), z.unknown()).catch({}),
   persistedState: z.unknown().optional(),
-  scheduleWeekStart: z.string().optional(),
-  scheduleEvents: z.array(calendarEventSchema).catch([]),
+  scheduleWeekStart: z.string().catch(getDefaultWeekStart()),
+  scheduleEvents: z.array(calendarEventSchema).catch(generateDefaultScheduleEvents(getDefaultWeekStart())),
   canvasBg: z.string().catch('#FFFFFF88'),
 })
 export type State = z.infer<typeof stateSchema>

@@ -2,22 +2,13 @@ import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
 import { Settings } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type SetStateAction } from 'react'
 import { EventModal } from './event_modal'
-import {
-  calendarEventsToScheduleData,
-  defaultEventData,
-  generateDefaultScheduleEvents,
-  getDefaultWeekStart,
-  randomEventData,
-  randString,
-  simpleHash,
-} from './fixtures'
+import { calendarEventsToScheduleData, defaultEventData, randomEventData, randString, simpleHash } from './fixtures'
 import { SchedulePanel } from './schedule_panel'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { FileInput } from './ui/file_input'
 import { FontSelector } from './ui/font_selector'
 import { ColorInput, DecimalInput, Input, IntegerInput } from './ui/input'
-import type { CalendarEvent } from './zod'
 import { InputArray } from './ui/input_array'
 import { Select } from './ui/select'
 import { manifestSchema, parseState, type Manifest, type State } from './zod'
@@ -44,17 +35,6 @@ export function App(props: { widget: Record<string, string>; state: string }) {
 
   const setWidth = (width: number) => updateState({ width })
   const setHeight = (height: number) => updateState({ height })
-
-  // Schedule state
-  const [scheduleWeekStart, setScheduleWeekStart] = useState(state.scheduleWeekStart ?? getDefaultWeekStart())
-  const [scheduleEvents, setScheduleEvents] = useState<CalendarEvent[]>(
-    state.scheduleEvents.length > 0 ? state.scheduleEvents : generateDefaultScheduleEvents(getDefaultWeekStart()),
-  )
-  useEffect(() => {
-    if (isSchedule) {
-      updateState({ scheduleWeekStart, scheduleEvents })
-    }
-  }, [scheduleWeekStart, scheduleEvents])
 
   const setName = (name: string) => updateManifest({ name })
   const setVersion = (version: string) => updateManifest({ version })
@@ -129,12 +109,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
           <Input type="text" label="Version:" name="version" value={manifest.version ?? ''} update={setVersion} />
           <Input type="textarea" label="Description:" name="description" value={manifest.description ?? ''} update={setDescription} />
 
-          <ColorInput
-            label="Canvas Background:"
-            name="canvasBg"
-            value={state.canvasBg}
-            update={(v) => updateState({ canvasBg: v })}
-          />
+          <ColorInput label="Canvas Background:" name="canvasBg" value={state.canvasBg} update={(v) => updateState({ canvasBg: v })} />
 
           <h1 className="text-lg font-bold pt-4">Settings</h1>
           {settings.map((s) => (
@@ -170,10 +145,10 @@ export function App(props: { widget: Record<string, string>; state: string }) {
         <div className="px-6 flex flex-col gap-4 pb-8">
           {isSchedule ?
             <SchedulePanel
-              weekStart={scheduleWeekStart}
-              setWeekStart={setScheduleWeekStart}
-              events={scheduleEvents}
-              setEvents={setScheduleEvents}
+              weekStart={state.scheduleWeekStart}
+              setWeekStart={(v) => updateState({ scheduleWeekStart: v })}
+              events={state.scheduleEvents}
+              setEvents={(v) => updateState({ scheduleEvents: v })}
             />
           : <TestEventsPanel events={events} setEvents={setEvents} publishEvent={publishEvent} />}
         </div>
@@ -229,7 +204,7 @@ function Widget({
   widget: Record<string, string>
   updateState: (v: Partial<State>) => void
 }) {
-  const scheduleData = calendarEventsToScheduleData(state.scheduleWeekStart ?? getDefaultWeekStart(), state.scheduleEvents)
+  const scheduleData = calendarEventsToScheduleData(state.scheduleWeekStart, state.scheduleEvents)
   const template = widget[manifest.template]
   const css = widget[manifest.css]
   const js = widget[manifest.js]
@@ -428,9 +403,7 @@ function TestEventsPanel({
             schema={o.schema}
             data={o.data}
             useRandomData={o.useRandomData}
-            setUseRandomData={(useRandomData) =>
-              setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, useRandomData } : i)))
-            }
+            setUseRandomData={(useRandomData) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, useRandomData } : i)))}
             setData={(data) => setEvents((old) => old.map((i) => (i.name === o.name ? { ...i, data } : i)))}
           />
         </div>
