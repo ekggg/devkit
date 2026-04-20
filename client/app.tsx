@@ -375,9 +375,16 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
     case 'string_array':
     case 'reward_ids':
       return <InputArray<string> {...commonProps} render={(i) => <Input type="text" {...i} />} />
+    case 'timezone':
+      return <Select {...commonProps} options={timezoneOptions} />
   }
   return null
 }
+
+const timezoneOptions = [
+  { label: 'No timezone', value: '' },
+  ...(Intl.supportedValuesOf?.('timeZone') ?? []).map((tz) => ({ label: tz, value: tz })),
+]
 
 function TestEventsPanel({
   events,
