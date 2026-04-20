@@ -109,6 +109,7 @@ declare namespace EKG {
       case 'image':
       case 'audio':
       case 'font':
+      case 'timezone':
         return 'string'
 
       case 'string_array':
