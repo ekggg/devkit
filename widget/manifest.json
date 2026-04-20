@@ -119,6 +119,11 @@
         "def": "Def",
         "xyz": "Xyz"
       }
+    },
+    "timezone": {
+      "type": "timezone",
+      "name": "Timezone",
+      "default": "America/New_York"
     }
   }
 }
