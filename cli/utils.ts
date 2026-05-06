@@ -108,6 +108,7 @@ declare namespace EKG {
       case 'color':
       case 'image':
       case 'audio':
+      case 'video':
       case 'font':
       case 'timezone':
         return 'string'

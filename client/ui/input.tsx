@@ -42,6 +42,8 @@ export function Input({ label, description, name, value, update, type, className
           className={cn([
             'block w-full rounded-md bg-white text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6',
             'dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+            'disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 disabled:outline-gray-200 disabled:placeholder:text-gray-300',
+            'dark:disabled:bg-white/10 dark:disabled:text-gray-500 dark:disabled:outline-white/5 dark:disabled:placeholder:text-gray-600',
             type === 'textarea' && 'field-sizing-content min-h-16',
             type === 'color' && 'h-9',
             'px-3 py-1.5',

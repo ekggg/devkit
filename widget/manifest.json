@@ -1,8 +1,13 @@
 {
   "$schema": "https://ekg.gg/schemas/manifest.json",
+  "type": "overlay",
   "name": "Test Widget",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
+  "size": {
+    "width": 2000,
+    "height": 1000
+  },
   "template": "template.hbs",
   "css": "styles.css",
   "js": "script.ts",
@@ -25,22 +30,29 @@
     "boolean": {
       "type": "boolean",
       "name": "Boolean",
-      "default": false,
-      "description": "here's a bit of a long description for testing"
+      "description": "here's a bit of a long description for testing",
+      "default": false
     },
     "color": {
       "type": "color",
       "name": "Color",
+      "group": "Color:",
       "default": "#FF00FF"
     },
     "color_array": {
       "type": "color_array",
       "name": "ColorArray",
-      "default": ["#FF0000", "#00FF00", "#0000FF"]
+      "group": "Color:",
+      "default": [
+        "#FF0000",
+        "#00FF00",
+        "#0000FF"
+      ]
     },
     "color_choices": {
       "type": "color",
       "name": "ColorChoices",
+      "group": "Color:",
       "default": "#FF0000",
       "choices": {
         "#FF0000": "Red",
@@ -56,7 +68,11 @@
     "decimal_array": {
       "type": "decimal_array",
       "name": "DecimalArray",
-      "default": [2.2, 3.3, 4.4]
+      "default": [
+        2.2,
+        3.3,
+        4.4
+      ]
     },
     "decimal_choices": {
       "type": "decimal",
@@ -83,16 +99,23 @@
     "integer": {
       "type": "integer",
       "name": "Integer",
+      "group": "Integer:",
       "default": 1
     },
     "integer_array": {
       "type": "integer_array",
       "name": "IntegerArray",
-      "default": [2, 3, 4]
+      "group": "Integer:",
+      "default": [
+        2,
+        3,
+        4
+      ]
     },
     "integer_choices": {
       "type": "integer",
       "name": "IntegerChoices",
+      "group": "Integer:",
       "default": 3,
       "choices": {
         "2": "Two",
@@ -108,7 +131,11 @@
     "string_array": {
       "type": "string_array",
       "name": "StringArray",
-      "default": ["abc", "def", "xyz"]
+      "default": [
+        "abc",
+        "def",
+        "xyz"
+      ]
     },
     "string_choices": {
       "type": "string",
@@ -124,6 +151,10 @@
       "type": "timezone",
       "name": "Timezone",
       "default": "America/New_York"
+    },
+    "video": {
+      "type": "video",
+      "name": "Video"
     }
   }
 }

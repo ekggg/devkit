@@ -37,6 +37,12 @@ export const manifestSchema = z.object({
   name: z.string().optional(),
   version: z.string().optional(),
   description: z.string().optional(),
+  size: z
+    .object({
+      width: z.number().int().min(1),
+      height: z.number().int().min(1),
+    })
+    .optional(),
   template: z.string().default(''),
   css: z.string().default(''),
   js: z.string().default(''),
@@ -57,6 +63,7 @@ export const manifestSchema = z.object({
         type: z.string().default(''),
         name: z.string().default(''),
         description: z.string().optional(),
+        group: z.string().optional(),
       }),
     )
     .optional(),

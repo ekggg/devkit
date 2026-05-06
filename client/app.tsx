@@ -1,5 +1,5 @@
 import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
-import { Settings } from 'lucide-react'
+import { ChevronDown, Settings } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type SetStateAction } from 'react'
 import { EventModal } from './event_modal'
 import { calendarEventsToScheduleData, defaultEventData, randomEventData, randString, simpleHash } from './fixtures'
@@ -23,12 +23,15 @@ type TestEvent = {
   useRandomData: boolean
 }
 
-const assetDefaults = ['audio', 'image']
+const assetDefaults = ['audio', 'image', 'video']
 
 export function App(props: { widget: Record<string, string>; state: string }) {
   const manifest = manifestSchema.parse(JSON.parse(props.widget['manifest.json']!))
   const isSchedule = manifest.type === 'schedule'
+  const fixedSize = manifest.size
   const state = parseState(props.state)
+  const previewWidth = fixedSize?.width ?? state.width
+  const previewHeight = fixedSize?.height ?? state.height
 
   const updateState = (v: Partial<State>) => import.meta.hot?.send('ekg:state', { ...state, ...v })
   const updateManifest = (v: Partial<Manifest>) => import.meta.hot?.send('ekg:manifest', { ...manifest, ...v })
@@ -45,6 +48,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
     value: state.settings[key] ?? defaultSetting(props.widget, value),
     update: (v: unknown) => updateState({ settings: { ...state.settings, [key]: v } }),
   }))
+  const settingItems = groupSettings(settings)
 
   const sceneRef = useRef(null)
   const [sceneSize, setSceneSize] = useState({ width: 1, height: 1 })
@@ -62,7 +66,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
     update()
     return () => sizeObserver.disconnect()
   }, [sceneRef.current])
-  const scale = Math.min(sceneSize.width / state.width, sceneSize.height / state.height)
+  const scale = Math.min(sceneSize.width / previewWidth, sceneSize.height / previewHeight)
 
   const [events, setEvents] = useState(
     EventSchema.oneOf.map((o) => {
@@ -102,8 +106,8 @@ export function App(props: { widget: Record<string, string>; state: string }) {
         <div className="px-6 flex flex-col gap-4 pb-8">
           <h1 className="text-xl font-bold py-4">Widget Dev Kit</h1>
           <div className="flex gap-4">
-            <IntegerInput label="Width:" name="width" value={state.width} update={setWidth} />
-            <IntegerInput label="Height:" name="height" value={state.height} update={setHeight} />
+            <IntegerInput label="Width:" name="width" value={previewWidth} update={setWidth} disabled={!!fixedSize} />
+            <IntegerInput label="Height:" name="height" value={previewHeight} update={setHeight} disabled={!!fixedSize} />
           </div>
           <Input type="text" label="Name:" name="name" value={manifest.name ?? ''} update={setName} />
           <Input type="text" label="Version:" name="version" value={manifest.version ?? ''} update={setVersion} />
@@ -112,8 +116,8 @@ export function App(props: { widget: Record<string, string>; state: string }) {
           <ColorInput label="Canvas Background:" name="canvasBg" value={state.canvasBg} update={(v) => updateState({ canvasBg: v })} />
 
           <h1 className="text-lg font-bold pt-4">Settings</h1>
-          {settings.map((s) => (
-            <Setting key={s.setting.key} {...s} />
+          {settingItems.map((item) => (
+            <SettingItem key={item.key} item={item} />
           ))}
         </div>
       </div>
@@ -123,15 +127,15 @@ export function App(props: { widget: Record<string, string>; state: string }) {
             ref={sceneRef}
             className="max-w-full"
             style={{
-              aspectRatio: `${state.width}/${state.height}`,
-              width: `${(100.0 * state.width) / state.height}cqh`,
+              aspectRatio: `${previewWidth}/${previewHeight}`,
+              width: `${(100.0 * previewWidth) / previewHeight}cqh`,
             }}
           >
             <div
               className="relative origin-top-left"
               style={{
-                width: `${state.width}px`,
-                height: `${state.height}px`,
+                width: `${previewWidth}px`,
+                height: `${previewHeight}px`,
                 transform: `scale(${scale})`,
                 backgroundColor: state.canvasBg,
               }}
@@ -192,6 +196,67 @@ const externalWidget = (() => {
     },
   }
 })()
+
+type SettingProps = {
+  setting: { key: string } & Setting
+  value: any
+  update: (v: any) => void
+}
+
+type SettingItem =
+  | {
+      type: 'setting'
+      key: string
+      setting: SettingProps
+    }
+  | {
+      type: 'group'
+      key: string
+      title: string
+      settings: SettingProps[]
+    }
+
+function groupSettings(settings: SettingProps[]): SettingItem[] {
+  const handled = new Set<string>()
+  const items: SettingItem[] = []
+
+  for (const setting of settings) {
+    const group = setting.setting.group
+    if (!group) {
+      items.push({ type: 'setting', key: setting.setting.key, setting })
+      continue
+    }
+
+    if (handled.has(group)) continue
+    handled.add(group)
+    items.push({
+      type: 'group',
+      key: `group-${group}`,
+      title: group,
+      settings: settings.filter((s) => s.setting.group === group),
+    })
+  }
+
+  return items
+}
+
+function SettingItem({ item }: { item: SettingItem }) {
+  if (item.type === 'setting') return <Setting {...item.setting} />
+
+  return (
+    <details open className="group/settings rounded-md border border-gray-300 dark:border-white/10">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-2 text-base font-semibold text-gray-900 marker:hidden dark:text-white">
+        <span className="truncate">{item.title}</span>
+        <ChevronDown className="size-4 shrink-0 text-gray-500 transition-transform group-open/settings:rotate-180 dark:text-gray-400" />
+      </summary>
+      <div className="flex flex-col gap-4 border-t border-gray-300 p-2 dark:border-white/10">
+        {item.settings.map((setting) => (
+          <Setting key={setting.setting.key} {...setting} />
+        ))}
+      </div>
+    </details>
+  )
+}
 
 function Widget({
   state,
@@ -366,6 +431,8 @@ function Setting({ setting, value, update }: { setting: { key: string } & Settin
       return <FontSelector options={options} {...commonProps} />
     case 'image':
       return <FileInput kind="image" {...commonProps} />
+    case 'video':
+      return <FileInput kind="video" {...commonProps} />
     case 'integer':
       return <IntegerInput {...commonProps} />
     case 'integer_array':
