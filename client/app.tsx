@@ -275,9 +275,7 @@ function Widget({
   const js = widget[manifest.js]
   const assets: any = Object.fromEntries(
     Object.entries(manifest.assets ?? {}).map(([key, { type, file, builtin }]) => {
-      if (builtin) return [key, builtin]
-      let v = widget[file!]!
-      if (type === 'font') v = simpleHash(v)
+      const v = type === 'font' ? fontSetting(widget, builtin || file!)[0] : widget[file!]
       return [key, v]
     }),
   )

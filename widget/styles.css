@@ -19,7 +19,7 @@ body {
 }
 
 h1 {
-  font-family: {{ settings.font }};
+  font-family: {{ assets.a }};
 }
 
 pre {
