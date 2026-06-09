@@ -7,9 +7,10 @@ type Props = {
   value: string
   update: (v: string) => void
   options: { label: string; value: string }[]
+  className?: string
 }
 
-export function Select({ label, description, name, value, update, options }: Props) {
+export function Select({ label, description, name, value, update, options, className }: Props) {
   return (
     <label className="flex flex-col gap-2">
       {!!label && <div className="text-sm/6 font-medium text-gray-900 dark:text-white">{label}</div>}
@@ -30,6 +31,7 @@ export function Select({ label, description, name, value, update, options }: Pro
             'bg-white text-gray-900 outline-gray-300 hover:outline-indigo-600/20 focus:outline-indigo-600',
             'dark:bg-white/5 dark:text-white dark:outline-white/10 dark:hover:outline-indigo-500/20 dark:focus:outline-indigo-500',
             'transition group-hover/select:bg-slate-950/50 group-has-open/select:border-white group-has-open/select:text-white group-hover/select:text-white',
+            className,
           ])}
         >
           <selectedcontent className="flex items-center gap-2 truncate"></selectedcontent>

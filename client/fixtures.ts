@@ -772,7 +772,7 @@ function randInt(min: number, max: number) {
 
 // --- Schedule widget fixtures ---
 
-import type { CalendarEvent } from './zod'
+import type { CalendarEvent, Goal } from './zod'
 
 const DAY_NAMES = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
 
@@ -836,4 +836,60 @@ export function calendarEventsToScheduleData(weekStart: string, events: Calendar
     }
   })
   return { days }
+}
+
+// --- Goal widget fixtures ---
+
+export const GOAL_TYPES = [
+  'new_followers',
+  'total_followers',
+  'new_subscribers',
+  'total_subscribers',
+  'new_subscriber_points',
+  'total_subscriber_points',
+  'monetary',
+] as const
+
+export type GoalType = (typeof GOAL_TYPES)[number]
+
+export const GOAL_TYPE_LABELS: Record<GoalType, string> = {
+  new_followers: 'New Followers',
+  total_followers: 'Total Followers',
+  new_subscribers: 'New Subscribers',
+  total_subscribers: 'Total Subscribers',
+  new_subscriber_points: 'New Subscriber Points',
+  total_subscriber_points: 'Total Subscriber Points',
+  monetary: 'Monetary',
+}
+
+export function isMonetaryGoal(type: string): boolean {
+  return type === 'monetary'
+}
+
+export function generateDefaultGoals(): Goal[] {
+  return [
+    { id: `goal_${randString(8)}`, type: 'new_followers', name: 'Follower Goal', status: 'active', start: 0, current: 45, target: 100, currency: null },
+    // Monetary goals track minor currency units (e.g. cents), matching ekg.tip.sent amountCents.
+    { id: `goal_${randString(8)}`, type: 'monetary', name: 'Donation Goal', status: 'active', start: 0, current: 4200, target: 25000, currency: 'USD' },
+  ]
+}
+
+/**
+ * Converts a test goal into the `data` payload shape of an `ekg.goal.updated`
+ * event (and the entries of `InitialData.activeGoals`). Devkit-authored goals
+ * always originate from the ekg platform.
+ */
+export function goalToGoalData(goal: Goal) {
+  return {
+    raw: {},
+    platform: 'ekg' as const,
+    id: goal.id,
+    type: goal.type,
+    name: goal.name,
+    status: goal.status,
+    start: goal.start,
+    current: goal.current,
+    target: goal.target,
+    currency: goal.currency,
+  }
 }

@@ -2,7 +2,8 @@ import { EventSchema, Fonts, manager, type ManagedWidget } from 'ekg:devkit'
 import { ChevronDown, Settings } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type SetStateAction } from 'react'
 import { EventModal } from './event_modal'
-import { calendarEventsToScheduleData, defaultEventData, randomEventData, randString, simpleHash } from './fixtures'
+import { calendarEventsToScheduleData, defaultEventData, goalToGoalData, randomEventData, randString, simpleHash } from './fixtures'
+import { GoalsPanel } from './goals_panel'
 import { SchedulePanel } from './schedule_panel'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
@@ -11,7 +12,7 @@ import { FontSelector } from './ui/font_selector'
 import { ColorInput, DecimalInput, Input, IntegerInput } from './ui/input'
 import { InputArray } from './ui/input_array'
 import { Select } from './ui/select'
-import { manifestSchema, parseState, type Manifest, type State } from './zod'
+import { manifestSchema, parseState, type Goal, type Manifest, type State } from './zod'
 
 type Setting = NonNullable<Manifest['settings']>[string]
 
@@ -69,7 +70,10 @@ export function App(props: { widget: Record<string, string>; state: string }) {
   const scale = Math.min(sceneSize.width / previewWidth, sceneSize.height / previewHeight)
 
   const [events, setEvents] = useState(
-    EventSchema.oneOf.map((o) => {
+    EventSchema.oneOf
+      // Goal updates are driven by the dedicated Goals panel so they reference real test goals.
+      .filter((o) => EventSchema.$defs[o.$ref.split('/').at(-1)!].properties.type.const !== 'ekg.goal.updated')
+      .map((o) => {
       const name = o.$ref.split('/').at(-1)!
       const type = EventSchema.$defs[name].properties.type.const
       const schema = {
@@ -98,6 +102,20 @@ export function App(props: { widget: Record<string, string>; state: string }) {
       type: e.type,
       data,
     } as EKG.Event)
+  }
+
+  const [panelTab, setPanelTab] = useState<'events' | 'goals'>('events')
+
+  // Active goals are surfaced to the widget through `initialData.activeGoals`.
+  const activeGoals = state.goals.filter((g) => g.status === 'active').map(goalToGoalData)
+  const setGoals = (goals: Goal[]) => updateState({ goals })
+  const fireGoalUpdate = (goal: Goal) => {
+    manager.fireEvent({
+      id: randString(60),
+      timestamp: Date.now(),
+      type: 'ekg.goal.updated',
+      data: goalToGoalData(goal),
+    } as unknown as EKG.Event)
   }
 
   return (
@@ -140,7 +158,7 @@ export function App(props: { widget: Record<string, string>; state: string }) {
                 backgroundColor: state.canvasBg,
               }}
             >
-              <Widget state={state} manifest={manifest} widget={props.widget} updateState={updateState} />
+              <Widget state={state} manifest={manifest} widget={props.widget} updateState={updateState} activeGoals={activeGoals} />
             </div>
           </div>
         </div>
@@ -154,7 +172,16 @@ export function App(props: { widget: Record<string, string>; state: string }) {
               events={state.scheduleEvents}
               setEvents={(v) => updateState({ scheduleEvents: v })}
             />
-          : <TestEventsPanel events={events} setEvents={setEvents} publishEvent={publishEvent} />}
+          : <>
+              <div className="flex gap-1 rounded-md bg-black/10 dark:bg-white/5 p-1 mt-4">
+                <PanelTab label="Test Events" active={panelTab === 'events'} onClick={() => setPanelTab('events')} />
+                <PanelTab label="Test Goals" active={panelTab === 'goals'} onClick={() => setPanelTab('goals')} />
+              </div>
+              {panelTab === 'events' ?
+                <TestEventsPanel events={events} setEvents={setEvents} publishEvent={publishEvent} />
+              : <GoalsPanel goals={state.goals} setGoals={setGoals} fireGoalUpdate={fireGoalUpdate} />}
+            </>
+          }
         </div>
       </div>
     </div>
@@ -263,11 +290,13 @@ function Widget({
   manifest,
   widget,
   updateState,
+  activeGoals,
 }: {
   state: State
   manifest: Manifest
   widget: Record<string, string>
   updateState: (v: Partial<State>) => void
+  activeGoals: ReturnType<typeof goalToGoalData>[]
 }) {
   const scheduleData = calendarEventsToScheduleData(state.scheduleWeekStart, state.scheduleEvents)
   const template = widget[manifest.template]
@@ -319,6 +348,9 @@ function Widget({
   // Initialize widget and handle persistence
   useEffect(() => {
     if (!widgetComponent || template == null || js == null || css == null) return
+    // Seed initialData.activeGoals before init so the widget sees configured goals on load.
+    // The runtime keeps this in sync afterwards as ekg.goal.updated events fire.
+    manager.setInitialData({ activeGoals } as EKG.InitialData)
     widgetComponent.init({
       template,
       js,
@@ -343,7 +375,7 @@ function Widget({
       persist()
       clearInterval(timer)
     }
-  }, [widgetComponent, template, css, js, fonts, JSON.stringify(assets), JSON.stringify(settings), JSON.stringify(scheduleData)])
+  }, [widgetComponent, template, css, js, fonts, JSON.stringify(assets), JSON.stringify(settings), JSON.stringify(scheduleData), JSON.stringify(activeGoals)])
 
   return <div ref={externalWidget.register} className="size-full" />
 }
@@ -451,6 +483,24 @@ const timezoneOptions = [
   ...(Intl.supportedValuesOf?.('timeZone') ?? []).map((tz) => ({ label: tz, value: tz })),
 ]
 
+function PanelTab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-selected={active}
+      className={
+        'flex-1 rounded px-3 py-1.5 text-sm font-semibold transition ' +
+        (active ?
+          'bg-white text-gray-900 shadow-xs dark:bg-white/15 dark:text-white'
+        : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white')
+      }
+    >
+      {label}
+    </button>
+  )
+}
+
 function TestEventsPanel({
   events,
   setEvents,
@@ -462,7 +512,6 @@ function TestEventsPanel({
 }) {
   return (
     <>
-      <h1 className="text-xl font-bold py-4">Test Events</h1>
       {events.map((o) => (
         <div key={o.name} className="flex gap-2">
           <Button variant="secondary" size="md" className="grow" onClick={() => publishEvent(o.name)}>
